@@ -1,0 +1,132 @@
+// ============================================
+// API Routes - Products
+// ============================================
+import { Router, Request, Response } from 'express';
+import { productService } from '../services/product.service';
+import { categoryService } from '../services/category.service';
+import { sellerService } from '../services/seller.service';
+import { analyticsService } from '../services/analytics.service';
+
+const router = Router();
+
+// GET /api/products - Get all products (paginated)
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const sortBy = (req.query.sort_by as string) || 'created_at';
+    const sortOrder = (req.query.sort_order as string) || 'desc';
+    const categoryId = req.query.category_id as string;
+    const search = req.query.search as string;
+
+    let result;
+    if (search) {
+      result = await productService.search(search, page, limit);
+    } else if (categoryId) {
+      result = await productService.getByCategory(categoryId, page, limit, sortBy, sortOrder as any);
+    } else {
+      const allProducts = await productService.getHomepageProducts();
+      result = {
+        data: allProducts.recommended,
+        total: allProducts.recommended.length,
+        page: 1,
+        limit: 20,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      };
+    }
+
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/products/homepage - Homepage data
+router.get('/homepage', async (_req: Request, res: Response) => {
+  try {
+    const [products, categories, banners] = await Promise.all([
+      productService.getHomepageProducts(),
+      categoryService.getFeatured(),
+      categoryService.getTree(),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        ...products,
+        categories,
+        categoryTree: categories,
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/products/:slug - Single product
+router.get('/:slug', async (req: Request, res: Response) => {
+  try {
+    const product = await productService.getBySlug(String((req.params as any).slug));
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    await productService.incrementViews(product.id);
+
+    res.json({ success: true, data: product });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/products - Create product (seller)
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const { telegram_id, ...productData } = req.body;
+    const seller = await sellerService.getByTelegramId(telegram_id);
+    if (!seller) {
+      return res.status(403).json({ success: false, error: 'Sotuvchi topilmadi' });
+    }
+
+    const product = await productService.create(seller.id, productData);
+    res.status(201).json({ success: true, data: product });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT /api/products/:id - Update product
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const product = await productService.update(String((req.params as any).id), req.body);
+    res.json({ success: true, data: product });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE /api/products/:id - Delete product
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    await productService.delete(String((req.params as any).id));
+    res.json({ success: true, message: 'Mahsulot o\'chirildi' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/products/seller/:sellerId - Seller's products
+router.get('/seller/:sellerId', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const result = await productService.getBySeller(String((req.params as any).sellerId), page, limit);
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+export default router;

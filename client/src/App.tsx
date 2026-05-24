@@ -1,0 +1,42 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAppStore } from './store/appStore';
+import HomePage from './pages/HomePage';
+import ProductPage from './pages/ProductPage';
+import CategoryPage from './pages/CategoryPage';
+import SearchPage from './pages/SearchPage';
+import CartPage from './pages/CartPage';
+import FavoritesPage from './pages/FavoritesPage';
+import SellerDashboard from './pages/SellerDashboard';
+import SellerProducts from './pages/SellerProducts';
+import SellerAddProduct from './pages/SellerAddProduct';
+
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+function App() {
+  const { initTg } = useAppStore();
+
+  useEffect(() => {
+    initTg();
+  }, [initTg]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/product/:slug" element={<ProductPage />} />
+        <Route path="/category/:slug" element={<CategoryPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/seller" element={<SellerDashboard />} />
+        <Route path="/seller/products" element={<SellerProducts />} />
+        <Route path="/seller/add-product" element={<SellerAddProduct />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
+  );
+}
+
+export { API_BASE };
+export default App;
