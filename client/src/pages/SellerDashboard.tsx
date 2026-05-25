@@ -1,9 +1,24 @@
 import { Link } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
+import { authService } from '../services/endpoints';
+import { useEffect } from 'react';
 import { FiArrowLeft, FiPackage, FiBarChart2, FiSettings, FiPlus, FiShoppingBag } from 'react-icons/fi';
 
 export default function SellerDashboard() {
-  const { seller, isSeller, telegramId } = useAppStore();
+  const { seller, isSeller, telegramId, setUser, setSeller, setIsSeller, setIsAdmin } = useAppStore();
+
+  useEffect(() => {
+    if (telegramId) {
+      authService.init(telegramId).then((res) => {
+        if (res.success) {
+          setUser(res.data.user);
+          setSeller(res.data.seller);
+          setIsSeller(res.data.is_seller);
+          setIsAdmin(res.data.is_admin);
+        }
+      }).catch(console.error);
+    }
+  }, [telegramId]);
 
   if (!telegramId) {
     return (
