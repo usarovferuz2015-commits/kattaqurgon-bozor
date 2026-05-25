@@ -51,6 +51,25 @@ export default function ProductPage() {
   const images = product.images?.length ? product.images : [{ url: '/placeholder.svg', is_primary: true }];
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
 
+  const sellerTgLink = product.seller?.username
+    ? `https://t.me/${product.seller.username}`
+    : product.seller?.telegram_id
+      ? `tg://user?id=${product.seller.telegram_id}`
+      : null;
+
+  const handleContactSeller = () => {
+    const tg = (window as any)?.Telegram?.WebApp;
+    if (sellerTgLink) {
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(sellerTgLink);
+      } else {
+        window.open(sellerTgLink, '_blank');
+      }
+    } else if (product.seller?.store_phone) {
+      window.open(`tel:${product.seller.store_phone}`, '_blank');
+    }
+  };
+
   const handleAddToCart = () => {
     addToCart({
       id: product.id,
@@ -66,12 +85,6 @@ export default function ProductPage() {
     toast.success('Savatchaga qo\'shildi');
   };
 
-  const handleContactSeller = () => {
-    if (product.seller) {
-      window.open(`https://t.me/${product.seller.store_slug}`, '_blank');
-    }
-  };
-
   const handleShare = () => {
     const url = window.location.href;
     if (navigator.share) {
@@ -81,10 +94,6 @@ export default function ProductPage() {
       toast.success('Havola nusxalandi');
     }
   };
-
-  const sellerTgLink = product.seller?.store_slug
-    ? `https://t.me/${product.seller.store_slug}`
-    : null;
 
   return (
     <div className="min-h-screen bg-white pb-24">

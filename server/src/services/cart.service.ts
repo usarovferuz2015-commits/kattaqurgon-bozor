@@ -19,7 +19,7 @@ export class CartService {
           product:products(
             *,
             images:product_images(*),
-            seller:sellers(id, store_name, store_slug, store_logo, is_verified)
+            seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username))
           )
         )
       `)

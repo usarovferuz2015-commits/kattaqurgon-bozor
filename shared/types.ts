@@ -245,6 +245,9 @@ export interface SellerBrief {
   store_slug: string;
   store_logo: string | null;
   is_verified: boolean;
+  telegram_id?: number;
+  username?: string | null;
+  store_phone?: string | null;
 }
 
 export interface CategoryBrief {

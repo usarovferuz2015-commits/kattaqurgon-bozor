@@ -78,7 +78,7 @@ export class ProductService {
         .select(`
           *,
           images:product_images(*),
-          seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+          seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
           category:categories(id, name_uz, slug, icon)
         `);
     }
@@ -93,7 +93,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `)
       .eq('slug', slug)
@@ -111,7 +111,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified)
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username))
       `, { count: 'exact' })
       .eq('seller_id', sellerId)
       .order('created_at', { ascending: false })
@@ -137,7 +137,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `, { count: 'exact' })
       .eq('category_id', categoryId)
@@ -165,7 +165,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `, { count: 'exact' })
       .textSearch('search_vector', query, { config: 'simple' })
@@ -197,7 +197,7 @@ export class ProductService {
         product:products(
           *,
           images:product_images(*),
-          seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+          seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
           category:categories(id, name_uz, slug, icon)
         )
       `)
@@ -210,7 +210,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `)
       .eq('status', 'active')
@@ -223,7 +223,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `)
       .eq('status', 'active')
@@ -236,7 +236,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `)
       .eq('status', 'active')
@@ -248,7 +248,7 @@ export class ProductService {
       .select(`
         *,
         images:product_images(*),
-        seller:sellers(id, store_name, store_slug, store_logo, is_verified),
+        seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username)),
         category:categories(id, name_uz, slug, icon)
       `)
       .eq('status', 'active')
