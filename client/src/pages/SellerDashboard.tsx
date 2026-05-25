@@ -22,7 +22,22 @@ export default function SellerDashboard() {
   }, [telegramId]);
 
   const navigate = (path: string) => {
-    window.location.href = `${WEB_URL}${path}?user=${telegramId}`;
+    const url = `${WEB_URL}${path}?user=${telegramId}`;
+    const tg = (window as any)?.Telegram?.WebApp;
+    if (tg?.openLink) {
+      tg.openLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  };
+
+  const goBack = () => {
+    const tg = (window as any)?.Telegram?.WebApp;
+    if (tg?.close) {
+      tg.close();
+    } else {
+      window.location.href = WEB_URL;
+    }
   };
 
   if (!telegramId) {
