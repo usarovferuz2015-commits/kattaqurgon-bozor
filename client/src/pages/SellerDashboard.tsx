@@ -159,45 +159,45 @@ export default function SellerDashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => window.location.href = '/seller/add-product'}
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-primary-50 transition-colors cursor-pointer"
+          <a
+            href="/seller/add-product"
+            className="card p-4 flex flex-col items-center gap-2 hover:bg-primary-50 transition-colors no-underline"
           >
             <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center text-xl">
               <FiPlus className="w-6 h-6 text-primary-600" />
             </div>
             <span className="text-sm font-medium">Mahsulot qo'shish</span>
-          </button>
+          </a>
 
-          <button
-            onClick={() => window.location.href = '/seller/products'}
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-accent-50 transition-colors cursor-pointer"
+          <a
+            href="/seller/products"
+            className="card p-4 flex flex-col items-center gap-2 hover:bg-accent-50 transition-colors no-underline"
           >
             <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center text-xl">
               <FiPackage className="w-6 h-6 text-accent-600" />
             </div>
             <span className="text-sm font-medium">Mahsulotlarim</span>
-          </button>
+          </a>
 
-          <button
-            onClick={() => window.location.href = '/seller/stats'}
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-blue-50 transition-colors cursor-pointer"
+          <a
+            href="/seller/stats"
+            className="card p-4 flex flex-col items-center gap-2 hover:bg-blue-50 transition-colors no-underline"
           >
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-xl">
               <FiBarChart2 className="w-6 h-6 text-blue-600" />
             </div>
             <span className="text-sm font-medium">Statistika</span>
-          </button>
+          </a>
 
-          <button
-            onClick={() => window.location.href = `/seller/orders?user=${telegramId}`}
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-green-50 transition-colors cursor-pointer"
+          <a
+            href={`/seller/orders?user=${telegramId}`}
+            className="card p-4 flex flex-col items-center gap-2 hover:bg-green-50 transition-colors no-underline"
           >
             <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-xl">
               <FiShoppingBag className="w-6 h-6 text-green-600" />
             </div>
             <span className="text-sm font-medium">Buyurtmalar</span>
-          </button>
+          </a>
         </div>
       </div>
     </div>
