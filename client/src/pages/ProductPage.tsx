@@ -317,17 +317,22 @@ export default function ProductPage() {
             <FiShoppingCart className="w-5 h-5" />
             Savatchaga qo'shish
           </button>
-          <button
+          <div
+            className="flex-1"
             onClick={() => {
-              alert("Tugma bosildi!");
+              alert("Div bosildi!");
               handleContactSeller();
             }}
-            style={{ zIndex: 9999, position: 'relative' }}
-            className="flex-1 btn-secondary flex items-center justify-center gap-2 p-4 bg-gray-200 border border-gray-300 rounded-lg"
           >
-            <FiMessageCircle className="w-5 h-5" />
-            Yozish (Sinov)
-          </button>
+            <button
+              type="button"
+              style={{ zIndex: 9999, position: 'relative' }}
+              className="w-full h-full btn-secondary flex items-center justify-center gap-2 p-4 bg-gray-200 border border-gray-300 rounded-lg"
+            >
+              <FiMessageCircle className="w-5 h-5" />
+              Yozish (Sinov)
+            </button>
+          </div>
         </div>
       </div>
     </div>
