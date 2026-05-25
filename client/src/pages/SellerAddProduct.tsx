@@ -10,7 +10,6 @@ const WEB_URL = 'https://client-olive-six-20.vercel.app';
 export default function SellerAddProduct() {
   const { telegramId, seller } = useAppStore();
   const tg = (window as any)?.Telegram?.WebApp;
-  const { telegramId, seller } = useAppStore();
 
   const [form, setForm] = useState({
     name_uz: '',
