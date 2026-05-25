@@ -6,6 +6,8 @@ import { productService } from '../services/product.service';
 import { categoryService } from '../services/category.service';
 import { sellerService } from '../services/seller.service';
 import { analyticsService } from '../services/analytics.service';
+import { userService } from '../services/user.service';
+import { notifyContactSeller } from '../bot';
 
 const router = Router();
 
@@ -124,6 +126,45 @@ router.get('/seller/:sellerId', async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const result = await productService.getBySeller(String((req.params as any).sellerId), page, limit);
     res.json({ success: true, ...result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// POST /api/products/:slug/contact - Contact seller via bot
+router.post('/:slug/contact', async (req: Request, res: Response) => {
+  try {
+    const { telegram_id } = req.body;
+    if (!telegram_id) {
+      return res.status(400).json({ success: false, error: 'telegram_id talab qilinadi' });
+    }
+
+    const product = await productService.getBySlug(String((req.params as any).slug));
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Mahsulot topilmadi' });
+    }
+
+    if (!product.seller || !product.seller.telegram_id) {
+      return res.status(400).json({ success: false, error: 'Sotuvchi haqida ma\'lumot topilmadi' });
+    }
+
+    const buyer = await userService.getByTelegramId(telegram_id);
+    const buyerName = buyer?.first_name || `Foydalanuvchi #${telegram_id}`;
+
+    await notifyContactSeller(
+      product.seller.telegram_id,
+      telegram_id,
+      buyerName,
+      product.name_uz,
+      product.slug
+    );
+
+    res.json({
+      success: true,
+      message: 'Xabar sotuvchiga yuborildi',
+      has_username: !!(product.seller as any)?.user?.username,
+      username: (product.seller as any)?.user?.username || null,
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

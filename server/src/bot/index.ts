@@ -384,8 +384,64 @@ async function showAdminSellers(ctx: MyContext) {
   await ctx.reply(message, { reply_markup: keyboard });
 }
 
+let botInstance: Bot<MyContext> | null = null;
+
+export function getBot(): Bot<MyContext> {
+  if (!botInstance) {
+    throw new Error('Bot not initialized. Call startBot() first.');
+  }
+  return botInstance;
+}
+
+export async function notifyContactSeller(
+  sellerTelegramId: number,
+  buyerTelegramId: number,
+  buyerName: string,
+  productName: string,
+  productSlug: string
+) {
+  const bot = getBot();
+  const webAppUrl = config.app.webAppUrl;
+
+  // Send notification to seller
+  try {
+    await bot.api.sendMessage(
+      sellerTelegramId,
+      `👋 Yangi xaridor!\n\n` +
+      `📦 Mahsulot: <b>${productName}</b>\n` +
+      `👤 Xaridor: ${buyerName}\n\n` +
+      `Xaridor bilan bog'lanmoqchi bo'lsangiz, quyidagi havola orqali unga yozishingiz mumkin:\n` +
+      `➡️ Xaridorga yozish: tg://user?id=${buyerTelegramId}\n\n` +
+      `🛍 Mahsulot: ${webAppUrl}/product/${productSlug}`,
+      { parse_mode: 'HTML' }
+    );
+  } catch (error) {
+    console.error(`Failed to notify seller ${sellerTelegramId}:`, error);
+  }
+
+  // Send confirmation to buyer
+  try {
+    await bot.api.sendMessage(
+      buyerTelegramId,
+      `✅ Xabaringiz sotuvchiga yuborildi!\n\n` +
+      `Sotuvchi tez orada siz bilan bog'lanadi.\n\n` +
+      `Agar sotuvchi javob bermasa, quyidagi tugma orqali uning do'koniga o'tishingiz mumkin:`,
+      {
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '🛍 Sotuvchi do\'koni', web_app: { url: `${webAppUrl}?user=${buyerTelegramId}` } }
+          ]]
+        }
+      }
+    );
+  } catch (error) {
+    console.error(`Failed to confirm buyer ${buyerTelegramId}:`, error);
+  }
+}
+
 export function startBot() {
   const bot = createBot();
+  botInstance = bot;
   bot.start({ onStart: () => console.log('🤖 Bot started successfully') });
   return bot;
 }

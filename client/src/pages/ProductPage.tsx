@@ -11,6 +11,7 @@ export default function ProductPage() {
   const { addToCart, telegramId } = useAppStore();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [contacting, setContacting] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -51,22 +52,58 @@ export default function ProductPage() {
   const images = product.images?.length ? product.images : [{ url: '/placeholder.svg', is_primary: true }];
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
 
-  const sellerTgLink = product.seller?.username
-    ? `https://t.me/${product.seller.username}`
-    : product.seller?.telegram_id
-      ? `tg://user?id=${product.seller.telegram_id}`
-      : null;
+  const seller = product.seller as any;
+  const sellerUsername = seller?.user?.username || seller?.username;
+  const sellerTgLink = sellerUsername
+    ? `https://t.me/${sellerUsername}`
+    : null;
 
-  const handleContactSeller = () => {
+  const handleContactSeller = async () => {
+    if (contacting) return;
+
     const tg = (window as any)?.Telegram?.WebApp;
-    if (sellerTgLink) {
-      if (tg?.openTelegramLink) {
-        tg.openTelegramLink(sellerTgLink);
-      } else {
-        window.open(sellerTgLink, '_blank');
+
+    // If seller has username, try opening direct chat first
+    if (sellerTgLink && tg?.openTelegramLink) {
+      tg.openTelegramLink(sellerTgLink);
+      return;
+    }
+
+    // Otherwise send notification via bot
+    if (!telegramId) {
+      toast.error('Telegram profilingiz aniqlanmadi');
+      return;
+    }
+
+    setContacting(true);
+    try {
+      const res = await productService.contactSeller(product.slug, telegramId);
+      if (res.success) {
+        toast.success('Xabar sotuvchiga yuborildi!');
+
+        // If the seller has a username, offer direct link as well
+        if (res.username && tg?.openTelegramLink) {
+          tg.openTelegramLink(`https://t.me/${res.username}`);
+        } else if (res.username) {
+          window.open(`https://t.me/${res.username}`, '_blank');
+        }
       }
-    } else if (product.seller?.store_phone) {
-      window.open(`tel:${product.seller.store_phone}`, '_blank');
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || 'Xatolik yuz berdi';
+      toast.error(msg);
+
+      // Fallback: try opening link directly
+      if (sellerTgLink) {
+        if (tg?.openTelegramLink) {
+          tg.openTelegramLink(sellerTgLink);
+        } else {
+          window.open(sellerTgLink, '_blank');
+        }
+      } else if (seller?.store_phone) {
+        window.open(`tel:${seller.store_phone}`, '_blank');
+      }
+    } finally {
+      setContacting(false);
     }
   };
 
@@ -193,16 +230,13 @@ export default function ProductPage() {
                 </svg>
               )}
             </div>
-            <span className="text-xs text-dark-400">Sotuvchi</span>
+            <span className="text-xs text-dark-400">
+              {sellerUsername ? `@${sellerUsername} · ` : ''}Sotuvchi
+            </span>
           </div>
-          {sellerTgLink && (
-            <button
-              onClick={() => window.open(sellerTgLink, '_blank')}
-              className="px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg"
-            >
-              Yozish
-            </button>
-          )}
+          <svg className="w-5 h-5 text-dark-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </Link>
 
         {/* Quantity Selector */}

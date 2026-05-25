@@ -33,6 +33,10 @@ export const productService = {
     const { data } = await api.get(`/products/seller/${sellerId}`, { params: { page } });
     return data;
   },
+  contactSeller: async (slug: string, telegramId: number) => {
+    const { data } = await api.post(`/products/${slug}/contact`, { telegram_id: telegramId });
+    return data;
+  },
 };
 
 export const categoryService = {
