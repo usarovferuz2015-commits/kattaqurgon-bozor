@@ -8,8 +8,12 @@ import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
 const WEB_URL = 'https://client-olive-six-20.vercel.app';
 
 export default function SellerAddProduct() {
-  const { telegramId, seller } = useAppStore();
+  const { telegramId: storeTelegramId, seller: storeSeller } = useAppStore();
   const tg = (window as any)?.Telegram?.WebApp;
+
+  const urlTelegramId = new URLSearchParams(window.location.search).get('user');
+  const telegramId = storeTelegramId || (urlTelegramId ? parseInt(urlTelegramId) : null);
+  const seller = storeSeller;
 
   const [form, setForm] = useState({
     name_uz: '',
