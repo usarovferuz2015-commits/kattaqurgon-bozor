@@ -148,6 +148,15 @@ export default function ProductPage() {
             <FiArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                alert("Header tugmasi bosildi!");
+                handleContactSeller();
+              }} 
+              className="p-2 bg-red-500 rounded-xl text-white text-xs"
+            >
+              Yozish (Test)
+            </button>
             <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-xl">
               <FiShare2 className="w-5 h-5" />
             </button>
@@ -317,22 +326,13 @@ export default function ProductPage() {
             <FiShoppingCart className="w-5 h-5" />
             Savatchaga qo'shish
           </button>
-          <div
-            className="flex-1"
-            style={{ zIndex: 9999, pointerEvents: 'auto' }}
-            onClick={() => {
-              alert("Div bosildi!");
-              handleContactSeller();
-            }}
+          <button
+            onClick={handleContactSeller}
+            className="flex-1 btn-secondary flex items-center justify-center gap-2 p-4 bg-gray-200 border border-gray-300 rounded-lg"
           >
-            <button
-              type="button"
-              className="w-full h-full btn-secondary flex items-center justify-center gap-2 p-4 bg-gray-200 border border-gray-300 rounded-lg"
-            >
-              <FiMessageCircle className="w-5 h-5" />
-              Yozish (Sinov)
-            </button>
-          </div>
+            <FiMessageCircle className="w-5 h-5" />
+            Yozish
+          </button>
         </div>
       </div>
     </div>
