@@ -1,14 +1,48 @@
-import { useAppStore } from '../store/appStore';
+import { useState, useEffect } from 'react';
 import { FiPackage, FiPlus, FiShoppingBag } from 'react-icons/fi';
 
 const WEB_URL = 'https://client-olive-six-20.vercel.app';
+const API_URL = 'https://kattaqurgon-bozor.up.railway.app';
 
 export default function SellerDashboard() {
-  const { seller, isSeller, telegramId, setSeller, setIsSeller } = useAppStore();
+  const [seller, setSeller] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const telegramId = new URLSearchParams(window.location.search).get('user');
 
-  return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      {!isSeller || !seller ? (
+  useEffect(() => {
+    if (telegramId) {
+      fetch(`${API_URL}/api/auth/init`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_id: parseInt(telegramId) }),
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data.seller) {
+          setSeller(res.data.seller);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [telegramId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-dark-500">Yuklanmoqda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!seller) {
+    return (
+      <div className="min-h-screen bg-gray-50">
         <div className="container-app py-8">
           <div className="text-center mb-8">
             <span className="text-6xl">🏪</span>
@@ -19,69 +53,71 @@ export default function SellerDashboard() {
             📱 Botga o'tish
           </a>
         </div>
-      ) : (
-        <>
-          <div className="bg-primary-600 text-white p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">🏪</div>
-              <div className="flex-1">
-                <h2 className="font-bold text-lg">{seller.store_name}</h2>
-                <p className="text-sm text-white/80">{seller.total_products} ta mahsulot</p>
-              </div>
-            </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="bg-primary-600 text-white p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">🏪</div>
+          <div className="flex-1">
+            <h2 className="font-bold text-lg">{seller.store_name}</h2>
+            <p className="text-sm text-white/80">{seller.total_products} ta mahsulot</p>
           </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-3 gap-1 bg-white shadow-sm">
-            <div className="p-4 text-center">
-              <p className="text-2xl font-bold text-primary-600">{seller.total_products}</p>
-              <p className="text-xs text-dark-400">Mahsulotlar</p>
-            </div>
-            <div className="p-4 text-center">
-              <p className="text-2xl font-bold text-accent-600">{seller.total_sales}</p>
-              <p className="text-xs text-dark-400">Sotuvlar</p>
-            </div>
-            <div className="p-4 text-center">
-              <p className="text-2xl font-bold text-blue-600">{seller.total_views}</p>
-              <p className="text-xs text-dark-400">Ko'rishlar</p>
-            </div>
+      <div className="grid grid-cols-3 gap-1 bg-white shadow-sm">
+        <div className="p-4 text-center">
+          <p className="text-2xl font-bold text-primary-600">{seller.total_products}</p>
+          <p className="text-xs text-dark-400">Mahsulotlar</p>
+        </div>
+        <div className="p-4 text-center">
+          <p className="text-2xl font-bold text-accent-600">{seller.total_sales}</p>
+          <p className="text-xs text-dark-400">Sotuvlar</p>
+        </div>
+        <div className="p-4 text-center">
+          <p className="text-2xl font-bold text-blue-600">{seller.total_views}</p>
+          <p className="text-xs text-dark-400">Ko'rishlar</p>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <a href={`${WEB_URL}/seller/add-product?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+          <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
+            <FiPlus className="w-6 h-6 text-primary-600" />
           </div>
-
-          <div className="p-4 space-y-3">
-            <a href={`${WEB_URL}/seller/add-product?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
-              <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
-                <FiPlus className="w-6 h-6 text-primary-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-dark-900">Mahsulot qo'shish</p>
-                <p className="text-sm text-dark-400">Yangi mahsulot qo'shing</p>
-              </div>
-              <span className="text-dark-300">→</span>
-            </a>
-
-            <a href={`${WEB_URL}/seller/products?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
-              <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center">
-                <FiPackage className="w-6 h-6 text-accent-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-dark-900">Mahsulotlarim</p>
-                <p className="text-sm text-dark-400">Barcha mahsulotlaringiz</p>
-              </div>
-              <span className="text-dark-300">→</span>
-            </a>
-
-            <a href={`${WEB_URL}/cart?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
-              <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                <FiShoppingBag className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-dark-900">Buyurtmalar</p>
-                <p className="text-sm text-dark-400">Buyurtmalaringizni ko'ring</p>
-              </div>
-              <span className="text-dark-300">→</span>
-            </a>
+          <div className="flex-1">
+            <p className="font-medium text-dark-900">Mahsulot qo'shish</p>
+            <p className="text-sm text-dark-400">Yangi mahsulot qo'shing</p>
           </div>
-        </>
-      )}
+          <span className="text-dark-300">→</span>
+        </a>
+
+        <a href={`${WEB_URL}/seller/products?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+          <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center">
+            <FiPackage className="w-6 h-6 text-accent-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-dark-900">Mahsulotlarim</p>
+            <p className="text-sm text-dark-400">Barcha mahsulotlaringiz</p>
+          </div>
+          <span className="text-dark-300">→</span>
+        </a>
+
+        <a href={`${WEB_URL}/cart?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+          <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+            <FiShoppingBag className="w-6 h-6 text-green-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-dark-900">Buyurtmalar</p>
+            <p className="text-sm text-dark-400">Buyurtmalaringizni ko'ring</p>
+          </div>
+          <span className="text-dark-300">→</span>
+        </a>
+      </div>
     </div>
   );
 }
