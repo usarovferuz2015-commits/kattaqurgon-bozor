@@ -12,32 +12,11 @@ export default function SellerAddProduct() {
   const tg = (window as any)?.Telegram?.WebApp;
   const API_URL = 'https://kattaqurgon-bozor-production.up.railway.app';
 
-  const urlTelegramId = new URLSearchParams(window.location.search).get('user');
+  const params = new URLSearchParams(window.location.search);
+  const urlTelegramId = params.get('user');
+  const role = params.get('role');
   const telegramId = storeTelegramId || (urlTelegramId ? parseInt(urlTelegramId) : null);
-
-  const [seller, setSeller] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch seller data on mount
-  useState(() => {
-    if (telegramId) {
-      fetch(`${API_URL}/api/auth/init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: telegramId }),
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data.seller) {
-          setSeller(res.data.seller);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  });
+  const isSeller = telegramId && role === 'seller';
 
   const [form, setForm] = useState({
     name_uz: '',
@@ -82,7 +61,7 @@ export default function SellerAddProduct() {
     );
   }
 
-  if (!telegramId || !seller) {
+  if (!telegramId || !isSeller) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container-app py-8 text-center">

@@ -40,7 +40,7 @@ export default function SellerDashboard() {
       </div>
 
       <div className="p-4 space-y-3">
-        <a href={`${WEB_URL}/seller/add-product?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+        <a href={`${WEB_URL}/seller/add-product?user=${telegramId}&role=seller`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
           <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
             <FiPlus className="w-6 h-6 text-primary-600" />
           </div>
