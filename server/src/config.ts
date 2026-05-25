@@ -29,7 +29,7 @@ export const config = {
     secret: process.env.JWT_SECRET || 'kattaqurgon-bozori-secret-key-change-in-production',
   },
   cors: {
-    allowedOrigins: (process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:5174,tg://,https://t.me')
+    allowedOrigins: (process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:5174,tg://,https://t.me,https://client-olive-six-20.vercel.app,https://admin-panel-ten-sigma-23.vercel.app')
       .split(',')
       .map(s => s.trim()),
   },
