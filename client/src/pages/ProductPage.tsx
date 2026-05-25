@@ -318,11 +318,15 @@ export default function ProductPage() {
             Savatchaga qo'shish
           </button>
           <button
-            onClick={handleContactSeller}
-            className="btn-secondary flex items-center justify-center gap-2"
+            onClick={() => {
+              alert("Tugma bosildi!");
+              handleContactSeller();
+            }}
+            style={{ zIndex: 9999, position: 'relative' }}
+            className="flex-1 btn-secondary flex items-center justify-center gap-2 p-4 bg-gray-200 border border-gray-300 rounded-lg"
           >
             <FiMessageCircle className="w-5 h-5" />
-            Yozish
+            Yozish (Sinov)
           </button>
         </div>
       </div>
