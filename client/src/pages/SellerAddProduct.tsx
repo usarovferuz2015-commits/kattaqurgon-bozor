@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import { sellerService, categoryService } from '../services/endpoints';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
 
+const WEB_URL = 'https://client-olive-six-20.vercel.app';
+
 export default function SellerAddProduct() {
-  const navigate = useNavigate();
+  const { telegramId, seller } = useAppStore();
+  const tg = (window as any)?.Telegram?.WebApp;
   const { telegramId, seller } = useAppStore();
 
   const [form, setForm] = useState({
@@ -32,6 +34,12 @@ export default function SellerAddProduct() {
       return res.data;
     },
   });
+
+  const goBack = () => {
+    const url = `${WEB_URL}/seller?user=${telegramId}&role=seller`;
+    if (tg?.openLink) tg.openLink(url);
+    else window.location.href = url;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,19 +67,24 @@ export default function SellerAddProduct() {
         category_id: form.category_id || undefined,
         is_negotiable: form.is_negotiable,
         tags: form.tags ? form.tags.split(',').map((t: string) => t.trim()) : [],
-        images: form.images.map((url) => ({ url, is_primary: false })),
+        images: form.images.length > 0 ? form.images.map((url, i) => ({ url, is_primary: i === 0 })) : undefined,
       };
 
-      if (productData.images.length > 0) {
-        productData.images[0].is_primary = true;
-      }
+      const res = await fetch(`https://kattaqurgon-bozor-production.up.railway.app/api/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      const json = await res.json();
 
-      const res = await sellerService.register(telegramId, productData);
-      // Actually we need to use productService.create, but let's fix the flow
-      toast.success('Mahsulot qo\'shildi!');
-      navigate('/seller/products');
+      if (json.success) {
+        toast.success('Mahsulot qo\'shildi!');
+        goBack();
+      } else {
+        toast.error(json.error || 'Xatolik yuz berdi');
+      }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Xatolik yuz berdi');
+      toast.error(error.message || 'Xatolik yuz berdi');
     } finally {
       setSubmitting(false);
     }
@@ -92,9 +105,9 @@ export default function SellerAddProduct() {
     <div className="min-h-screen bg-gray-50">
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 h-12 px-4">
-          <Link to="/seller" className="p-1 -ml-1">
+          <button onClick={goBack} className="p-1 -ml-1">
             <FiArrowLeft className="w-5 h-5" />
-          </Link>
+          </button>
           <h1 className="font-bold">Yangi mahsulot</h1>
         </div>
       </div>
@@ -103,27 +116,30 @@ export default function SellerAddProduct() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Images */}
           <div className="card p-4">
-            <label className="block text-sm font-medium text-dark-700 mb-2">Rasmlar</label>
-            <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar">
-              {form.images.map((url, index) => (
-                <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center"
-                  >
-                    <FiX className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <label className="block text-sm font-medium text-dark-700 mb-2">Rasmlar (URL)</label>
+            <p className="text-xs text-dark-400 mb-3">Rasm URL manzilini kiriting. Agar rasmingiz bo'lmasa, bo'sh qoldiring.</p>
+            {form.images.length > 0 && (
+              <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar">
+                {form.images.map((url, index) => (
+                  <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, images: form.images.filter((_, i) => i !== index) })}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center"
+                    >
+                      <FiX className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="flex gap-2">
               <input
                 type="url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Rasm URL manzili"
+                placeholder="https://example.com/rasm.jpg"
                 className="input-field flex-1 text-sm"
               />
               <button type="button" onClick={addImage} className="btn-secondary text-sm px-4">
