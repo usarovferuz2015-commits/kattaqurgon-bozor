@@ -66,12 +66,19 @@ export default function SellerDashboard() {
             </div>
           </div>
 
-          <Link
-            to="/"
-            className="btn-primary w-full mt-8 text-center block"
-          >
-            ⬅️ Bosh sahifaga qaytish va do'kon ochish
-          </Link>
+          <div className="text-center mt-8 p-4 bg-primary-50 rounded-xl">
+            <p className="text-sm text-primary-800 font-medium">
+              Do'kon ochish uchun botga <strong>/start</strong> yuboring va "Sotuvchi Paneli" tugmasini bosing
+            </p>
+            <a
+              href="https://t.me/kattaqurgon_bozori_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary mt-3 inline-block"
+            >
+              📱 Botga o'tish
+            </a>
+          </div>
         </div>
       </div>
     );
