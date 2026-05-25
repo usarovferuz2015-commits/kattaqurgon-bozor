@@ -8,12 +8,36 @@ import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
 const WEB_URL = 'https://client-olive-six-20.vercel.app';
 
 export default function SellerAddProduct() {
-  const { telegramId: storeTelegramId, seller: storeSeller } = useAppStore();
+  const { telegramId: storeTelegramId } = useAppStore();
   const tg = (window as any)?.Telegram?.WebApp;
+  const API_URL = 'https://kattaqurgon-bozor-production.up.railway.app';
 
   const urlTelegramId = new URLSearchParams(window.location.search).get('user');
   const telegramId = storeTelegramId || (urlTelegramId ? parseInt(urlTelegramId) : null);
-  const seller = storeSeller;
+
+  const [seller, setSeller] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch seller data on mount
+  useState(() => {
+    if (telegramId) {
+      fetch(`${API_URL}/api/auth/init`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telegram_id: telegramId }),
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data.seller) {
+          setSeller(res.data.seller);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  });
 
   const [form, setForm] = useState({
     name_uz: '',
@@ -40,16 +64,40 @@ export default function SellerAddProduct() {
 
   const goBack = () => {
     const url = `${WEB_URL}/seller?user=${telegramId}&role=seller`;
-    if (tg?.openLink) tg.openLink(url);
-    else window.location.href = url;
+    if (tg?.openLink) {
+      tg.openLink(url);
+    } else {
+      window.location.href = url;
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-dark-500">Yuklanmoqda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!telegramId || !seller) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container-app py-8 text-center">
+          <span className="text-4xl">⚠️</span>
+          <p className="text-dark-500 mt-3">Sotuvchi profili topilmadi. Bot orqali do'kon oching.</p>
+          <a href="https://t.me/kattaqurgon_bozori_bot" target="_blank" rel="noopener noreferrer" className="btn-primary mt-4 inline-block">
+            Botga o'tish
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!telegramId || !seller) {
-      toast.error('Sotuvchi profili topilmadi');
-      return;
-    }
 
     if (!form.name_uz || !form.price) {
       toast.error('Nomi va narxi majburiy');
