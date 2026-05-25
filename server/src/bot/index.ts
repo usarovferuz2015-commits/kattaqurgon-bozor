@@ -228,6 +228,31 @@ export function createBot(): Bot<MyContext> {
     const telegramId = ctx.from!.id;
     await ctx.answerCallbackQuery();
 
+    const existingSeller = await sellerService.getByTelegramId(telegramId);
+
+    if (action === 'register') {
+      if (existingSeller) {
+        await ctx.reply(
+          `Siz allaqachon sotuvchisiz! 🏪\n\n` +
+          `Do'koningiz: ${existingSeller.store_name}\n` +
+          `Mahsulotlar: ${existingSeller.total_products}\n` +
+          `Holat: ${existingSeller.is_active ? '✅ Faol' : '❌ Bloklangan'}`,
+          {
+            reply_markup: new InlineKeyboard().row(
+              { text: '👨‍💼 Sotuvchi paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}&role=seller` } }
+            )
+          }
+        );
+        return;
+      }
+      ctx.session.step = 'seller_name';
+      await ctx.reply(
+        'Do\'kon ochish uchun quyidagi ma\'lumotlarni kiriting.\n\n' +
+        '1/4: Do\'kon nomini kiriting:'
+      );
+      return;
+    }
+
     const user = await userService.getByTelegramId(telegramId);
     if (!user) return;
 
