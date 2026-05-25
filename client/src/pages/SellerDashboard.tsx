@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import { authService } from '../services/endpoints';
 import { useEffect } from 'react';
 import { FiArrowLeft, FiPackage, FiBarChart2, FiSettings, FiPlus, FiShoppingBag } from 'react-icons/fi';
+
+const WEB_URL = 'https://client-olive-six-20.vercel.app';
 
 export default function SellerDashboard() {
   const { seller, isSeller, telegramId, setUser, setSeller, setIsSeller, setIsAdmin } = useAppStore();
@@ -20,6 +21,10 @@ export default function SellerDashboard() {
     }
   }, [telegramId]);
 
+  const navigate = (path: string) => {
+    window.location.href = `${WEB_URL}${path}?user=${telegramId}`;
+  };
+
   if (!telegramId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -33,9 +38,9 @@ export default function SellerDashboard() {
       <div className="min-h-screen bg-gray-50">
         <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
           <div className="flex items-center gap-3 h-12 px-4">
-            <Link to="/" className="p-1 -ml-1">
+            <div onClick={() => navigate('')} className="p-1 -ml-1 cursor-pointer">
               <FiArrowLeft className="w-5 h-5" />
-            </Link>
+            </div>
             <h1 className="font-bold">Sotuvchi Paneli</h1>
           </div>
         </div>
@@ -51,29 +56,21 @@ export default function SellerDashboard() {
 
           <div className="space-y-4">
             <div className="card p-4 flex gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center text-lg flex-shrink-0">
-                📦
-              </div>
+              <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center text-lg flex-shrink-0">📦</div>
               <div>
                 <h3 className="font-medium text-sm">Mahsulot qo'shing</h3>
                 <p className="text-xs text-dark-400">Mahsulotlaringizni online katalogga qo'shing</p>
               </div>
             </div>
-
             <div className="card p-4 flex gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent-100 flex items-center justify-center text-lg flex-shrink-0">
-                📈
-              </div>
+              <div className="w-10 h-10 rounded-xl bg-accent-100 flex items-center justify-center text-lg flex-shrink-0">📈</div>
               <div>
                 <h3 className="font-medium text-sm">Statistika ko'ring</h3>
                 <p className="text-xs text-dark-400">Mahsulotlaringiz necha marta ko'rilganini bilib oling</p>
               </div>
             </div>
-
             <div className="card p-4 flex gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">
-                🤝
-              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">🤝</div>
               <div>
                 <h3 className="font-medium text-sm">Xaridorlar bilan bog'laning</h3>
                 <p className="text-xs text-dark-400">Xaridorlar siz bilan bevosita bog'lanishi mumkin</p>
@@ -83,7 +80,7 @@ export default function SellerDashboard() {
 
           <div className="text-center mt-8 p-4 bg-primary-50 rounded-xl">
             <p className="text-sm text-primary-800 font-medium">
-              Do'kon ochish uchun botga <strong>/start</strong> yuboring va "Sotuvchi Paneli" tugmasini bosing
+              Do'kon ochish uchun botga <strong>/start</strong> yuboring
             </p>
             <a
               href="https://t.me/kattaqurgon_bozori_bot"
@@ -99,33 +96,27 @@ export default function SellerDashboard() {
     );
   }
 
-  // Seller dashboard
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between h-12 px-4">
           <div className="flex items-center gap-3">
-            <Link to="/" className="p-1 -ml-1">
+            <div onClick={() => navigate('')} className="p-1 -ml-1 cursor-pointer">
               <FiArrowLeft className="w-5 h-5" />
-            </Link>
+            </div>
             <h1 className="font-bold">Sotuvchi Paneli</h1>
           </div>
-          <Link to={`/seller/settings?user=${telegramId}`} className="p-2">
+          <div onClick={() => navigate('/seller/settings')} className="p-2 cursor-pointer">
             <FiSettings className="w-5 h-5" />
-          </Link>
+          </div>
         </div>
       </div>
 
       <div className="container-app py-4 space-y-4">
-        {/* Seller Info */}
         <div className="card p-4">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center text-2xl">
-              {seller.store_logo ? (
-                <img src={seller.store_logo} alt="" className="w-full h-full rounded-2xl object-cover" />
-              ) : (
-                '🏪'
-              )}
+              🏪
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-1">
@@ -141,7 +132,6 @@ export default function SellerDashboard() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="card p-3 text-center">
             <p className="text-2xl font-bold text-primary-600">{seller.total_products}</p>
@@ -157,47 +147,34 @@ export default function SellerDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <a
-            href="/seller/add-product"
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-primary-50 transition-colors no-underline"
-          >
+          <div onClick={() => navigate('/seller/add-product')} className="card p-4 flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
             <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center text-xl">
               <FiPlus className="w-6 h-6 text-primary-600" />
             </div>
             <span className="text-sm font-medium">Mahsulot qo'shish</span>
-          </a>
+          </div>
 
-          <a
-            href="/seller/products"
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-accent-50 transition-colors no-underline"
-          >
+          <div onClick={() => navigate('/seller/products')} className="card p-4 flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
             <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center text-xl">
               <FiPackage className="w-6 h-6 text-accent-600" />
             </div>
             <span className="text-sm font-medium">Mahsulotlarim</span>
-          </a>
+          </div>
 
-          <a
-            href="/seller/stats"
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-blue-50 transition-colors no-underline"
-          >
+          <div onClick={() => navigate('/seller/stats')} className="card p-4 flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-xl">
               <FiBarChart2 className="w-6 h-6 text-blue-600" />
             </div>
             <span className="text-sm font-medium">Statistika</span>
-          </a>
+          </div>
 
-          <a
-            href={`/seller/orders?user=${telegramId}`}
-            className="card p-4 flex flex-col items-center gap-2 hover:bg-green-50 transition-colors no-underline"
-          >
+          <div onClick={() => navigate('/seller/orders')} className="card p-4 flex flex-col items-center gap-2 cursor-pointer active:scale-95 transition-transform">
             <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-xl">
               <FiShoppingBag className="w-6 h-6 text-green-600" />
             </div>
             <span className="text-sm font-medium">Buyurtmalar</span>
-          </a>
+          </div>
         </div>
       </div>
     </div>
