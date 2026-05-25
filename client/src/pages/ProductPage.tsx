@@ -149,8 +149,9 @@ export default function ProductPage() {
           </Link>
           <div className="flex gap-2">
             <button 
+              type="button"
               onClick={() => {
-                alert("Header tugmasi bosildi!");
+                window.alert("Test ishlayapti!");
                 handleContactSeller();
               }} 
               className="p-2 bg-red-500 rounded-xl text-white text-xs"
