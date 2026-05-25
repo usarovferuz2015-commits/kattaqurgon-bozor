@@ -59,25 +59,31 @@ export default function ProductPage() {
     : null;
 
   const handleContactSeller = async () => {
+    console.log("Contact button clicked. telegramId:", telegramId, "seller:", product.seller);
     if (contacting) return;
 
     const tg = (window as any)?.Telegram?.WebApp;
 
     // If seller has username, try opening direct chat first
     if (sellerTgLink && tg?.openTelegramLink) {
+      console.log("Opening direct chat via tg.openTelegramLink:", sellerTgLink);
       tg.openTelegramLink(sellerTgLink);
       return;
     }
 
     // Otherwise send notification via bot
     if (!telegramId) {
+      console.error("Missing telegramId");
       toast.error('Telegram profilingiz aniqlanmadi');
       return;
     }
 
     setContacting(true);
     try {
+      console.log("Calling API contactSeller for slug:", product.slug);
       const res = await productService.contactSeller(product.slug, telegramId);
+      console.log("API response:", res);
+      
       if (res.success) {
         toast.success('Xabar sotuvchiga yuborildi!');
 
@@ -89,6 +95,7 @@ export default function ProductPage() {
         }
       }
     } catch (err: any) {
+      console.error("API error:", err);
       const msg = err?.response?.data?.error || err?.message || 'Xatolik yuz berdi';
       toast.error(msg);
 
