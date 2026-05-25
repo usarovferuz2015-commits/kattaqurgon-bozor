@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiPackage, FiPlus, FiShoppingBag } from 'react-icons/fi';
 
 const WEB_URL = 'https://client-olive-six-20.vercel.app';
-const API_URL = 'https://kattaqurgon-bozor.up.railway.app';
+const API_URL = 'https://kattaqurgon-bozor-production.up.railway.app';
 
 export default function SellerDashboard() {
   const [seller, setSeller] = useState<any>(null);
