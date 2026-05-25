@@ -1,53 +1,23 @@
-import { useState, useEffect } from 'react';
-import { FiPackage, FiPlus, FiShoppingBag } from 'react-icons/fi';
+import { FiPlus, FiPackage, FiShoppingBag } from 'react-icons/fi';
 
 const WEB_URL = 'https://client-olive-six-20.vercel.app';
-const API_URL = 'https://kattaqurgon-bozor-production.up.railway.app';
 
 export default function SellerDashboard() {
-  const [seller, setSeller] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const telegramId = new URLSearchParams(window.location.search).get('user');
+  const role = new URLSearchParams(window.location.search).get('role');
 
-  useEffect(() => {
-    if (telegramId) {
-      fetch(`${API_URL}/api/auth/init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: parseInt(telegramId) }),
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data.seller) {
-          setSeller(res.data.seller);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [telegramId]);
+  const isSeller = telegramId && role === 'seller';
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-dark-500">Yuklanmoqda...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!seller) {
+  if (!isSeller) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container-app py-8">
           <div className="text-center mb-8">
             <span className="text-6xl">🏪</span>
             <h2 className="text-2xl font-bold mt-4">Do'kon oching</h2>
-            <p className="text-dark-500 mt-2">O'z do'koningizni oching va mahsulotlaringizni butun bozorga ko'rsating</p>
+            <p className="text-dark-500 mt-2">
+              O'z do'koningizni oching va mahsulotlaringizni butun bozorga ko'rsating
+            </p>
           </div>
           <a href="https://t.me/kattaqurgon_bozori_bot" target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center block">
             📱 Botga o'tish
@@ -63,24 +33,9 @@ export default function SellerDashboard() {
         <div className="flex items-center gap-3">
           <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">🏪</div>
           <div className="flex-1">
-            <h2 className="font-bold text-lg">{seller.store_name}</h2>
-            <p className="text-sm text-white/80">{seller.total_products} ta mahsulot</p>
+            <h2 className="font-bold text-lg">Mening do'konim</h2>
+            <p className="text-sm text-white/80">Sotuvchi paneli</p>
           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-1 bg-white shadow-sm">
-        <div className="p-4 text-center">
-          <p className="text-2xl font-bold text-primary-600">{seller.total_products}</p>
-          <p className="text-xs text-dark-400">Mahsulotlar</p>
-        </div>
-        <div className="p-4 text-center">
-          <p className="text-2xl font-bold text-accent-600">{seller.total_sales}</p>
-          <p className="text-xs text-dark-400">Sotuvlar</p>
-        </div>
-        <div className="p-4 text-center">
-          <p className="text-2xl font-bold text-blue-600">{seller.total_views}</p>
-          <p className="text-xs text-dark-400">Ko'rishlar</p>
         </div>
       </div>
 
