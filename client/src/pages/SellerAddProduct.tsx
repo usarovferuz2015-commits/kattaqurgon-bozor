@@ -14,9 +14,7 @@ export default function SellerAddProduct() {
 
   const params = new URLSearchParams(window.location.search);
   const urlTelegramId = params.get('user');
-  const role = params.get('role');
   const telegramId = storeTelegramId || (urlTelegramId ? parseInt(urlTelegramId) : null);
-  const isSeller = telegramId && role === 'seller';
 
   const [form, setForm] = useState({
     name_uz: '',
@@ -50,12 +48,12 @@ export default function SellerAddProduct() {
     }
   };
 
-  if (!telegramId || !isSeller) {
+  if (!telegramId) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container-app py-8 text-center">
           <span className="text-4xl">⚠️</span>
-          <p className="text-dark-500 mt-3">Sotuvchi profili topilmadi. Bot orqali do'kon oching.</p>
+          <p className="text-dark-500 mt-3">Telegram orqali kiring</p>
           <a href="https://t.me/kattaqurgon_bozori_bot" target="_blank" rel="noopener noreferrer" className="btn-primary mt-4 inline-block">
             Botga o'tish
           </a>
@@ -89,7 +87,7 @@ export default function SellerAddProduct() {
         images: form.images.length > 0 ? form.images.map((url, i) => ({ url, is_primary: i === 0 })) : undefined,
       };
 
-      const res = await fetch(`https://kattaqurgon-bozor-production.up.railway.app/api/products`, {
+      const res = await fetch(`${API_URL}/api/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData),
@@ -103,7 +101,8 @@ export default function SellerAddProduct() {
         toast.error(json.error || 'Xatolik yuz berdi');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Xatolik yuz berdi');
+      toast.error('Xatolik: Serverga bog\'lanib bo\'lmadi');
+      console.error(error);
     } finally {
       setSubmitting(false);
     }
