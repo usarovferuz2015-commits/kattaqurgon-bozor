@@ -10,7 +10,6 @@ const WEB_URL = 'https://client-olive-six-20.vercel.app';
 export default function SellerAddProduct() {
   const { telegramId: storeTelegramId } = useAppStore();
   const tg = (window as any)?.Telegram?.WebApp;
-  const API_URL = 'https://kattaqurgon-bozor-production.up.railway.app';
 
   const params = new URLSearchParams(window.location.search);
   const urlTelegramId = params.get('user');
@@ -87,7 +86,7 @@ export default function SellerAddProduct() {
         images: form.images.length > 0 ? form.images.map((url, i) => ({ url, is_primary: i === 0 })) : undefined,
       };
 
-      const res = await fetch(`${API_URL}/api/products`, {
+      const res = await fetch(`/api/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData),
