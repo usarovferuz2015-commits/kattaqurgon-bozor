@@ -67,10 +67,10 @@ export default function SellerDashboard() {
           </div>
 
           <Link
-            to={`/seller/register?user=${telegramId}`}
+            to="/"
             className="btn-primary w-full mt-8 text-center block"
           >
-            Do'kon ochish
+            ⬅️ Bosh sahifaga qaytish va do'kon ochish
           </Link>
         </div>
       </div>
