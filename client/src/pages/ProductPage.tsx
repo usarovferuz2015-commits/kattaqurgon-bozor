@@ -319,6 +319,7 @@ export default function ProductPage() {
           </button>
           <div
             className="flex-1"
+            style={{ zIndex: 9999, pointerEvents: 'auto' }}
             onClick={() => {
               alert("Div bosildi!");
               handleContactSeller();
@@ -326,7 +327,6 @@ export default function ProductPage() {
           >
             <button
               type="button"
-              style={{ zIndex: 9999, position: 'relative' }}
               className="w-full h-full btn-secondary flex items-center justify-center gap-2 p-4 bg-gray-200 border border-gray-300 rounded-lg"
             >
               <FiMessageCircle className="w-5 h-5" />
