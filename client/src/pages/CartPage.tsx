@@ -1,12 +1,34 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
+import { productService } from '../services/endpoints';
 import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
-  const { cart, cartCount, cartTotal, updateCartQuantity, removeFromCart, clearCart } = useAppStore();
+  const { cart, cartCount, cartTotal, updateCartQuantity, removeFromCart, clearCart, telegramId } = useAppStore();
+  const [contacting, setContacting] = useState(false);
 
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
+
+  const handleContactSellers = async () => {
+    if (!telegramId) {
+      toast.error('Telegram profilingiz aniqlanmadi');
+      return;
+    }
+    setContacting(true);
+    try {
+      // Har bir mahsulot uchun sotuvchiga xabar yuborish
+      for (const item of cart) {
+        await productService.contactSeller(item.slug, telegramId);
+      }
+      toast.success('Barcha sotuvchilarga xabar yuborildi!');
+    } catch (err: any) {
+      toast.error('Xabar yuborishda xatolik yuz berdi');
+    } finally {
+      setContacting(false);
+    }
+  };
 
   const handleQuantityChange = (productId: string, delta: number) => {
     const item = cart.find((i) => i.product_id === productId);
@@ -120,7 +142,13 @@ export default function CartPage() {
             <span className="text-dark-500">Jami:</span>
             <span className="text-xl font-bold text-primary-600">{formatPrice(cartTotal)}</span>
           </div>
-          <button className="btn-primary w-full">Sotuvchiga yozish</button>
+          <button 
+            onClick={handleContactSellers}
+            disabled={contacting}
+            className="btn-primary w-full flex items-center justify-center gap-2"
+          >
+            {contacting ? 'Yuborilmoqda...' : 'Sotuvchiga yozish'}
+          </button>
           <p className="text-xs text-dark-400 text-center mt-2">
             To'lov sotuvchi bilan kelishilgan holda amalga oshiriladi
           </p>
