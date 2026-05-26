@@ -16,12 +16,23 @@ const queryClient = new QueryClient({
   },
 });
 
-try {
-  const root = document.getElementById('root');
-  if (root) {
-    root.innerHTML = "<h1>Hello World!</h1>";
-  }
-} catch (error: any) {
-  const debugDiv = document.getElementById('debug');
-  if (debugDiv) debugDiv.innerText = "Fatal Error: " + error.message;
-}
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <App />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              borderRadius: '12px',
+              padding: '12px 16px',
+              fontSize: '14px',
+            },
+          }}
+        />
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>
+);
