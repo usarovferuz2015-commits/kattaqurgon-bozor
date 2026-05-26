@@ -16,23 +16,28 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              borderRadius: '12px',
-              padding: '12px 16px',
-              fontSize: '14px',
-            },
-          }}
-        />
-      </BrowserRouter>
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+try {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <App />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                borderRadius: '12px',
+                padding: '12px 16px',
+                fontSize: '14px',
+              },
+            }}
+          />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+} catch (error: any) {
+  const debugDiv = document.getElementById('debug');
+  if (debugDiv) debugDiv.innerText = "React Error: " + error.message;
+}
