@@ -14,7 +14,7 @@ export default defineConfig({
           let html = readFileSync(htmlPath, 'utf-8');
           html = html.replace(
             '<script type="module" crossorigin src="',
-            '<script defer src="'
+            '<script src="'
           );
           writeFileSync(htmlPath, html, 'utf-8');
         } catch (e) {
@@ -25,11 +25,5 @@ export default defineConfig({
   ],
   build: {
     target: 'es2015',
-    rollupOptions: {
-      output: {
-        format: 'iife',
-        inlineDynamicImports: true,
-      },
-    },
   },
 });
