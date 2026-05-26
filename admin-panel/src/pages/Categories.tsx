@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiChevronRight, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi';
 
 interface CategoriesProps {
   adminId: number;
@@ -12,13 +12,9 @@ export default function Categories({ adminId }: CategoriesProps) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({
-    name_uz: '',
-    slug: '',
-    icon: '',
-    parent_id: '',
-    sort_order: '0',
-    description: '',
+    name_uz: '', slug: '', icon: '', parent_id: '', sort_order: '0', description: '',
   });
 
   const { data: categories, isLoading } = useQuery({
@@ -82,7 +78,6 @@ export default function Categories({ adminId }: CategoriesProps) {
       sort_order: parseInt(form.sort_order),
       description: form.description || undefined,
     };
-
     if (editing) {
       updateMutation.mutate({ id: editing.id, ...data });
     } else {
@@ -93,12 +88,8 @@ export default function Categories({ adminId }: CategoriesProps) {
   const editCategory = (cat: any) => {
     setEditing(cat);
     setForm({
-      name_uz: cat.name_uz,
-      slug: cat.slug,
-      icon: cat.icon || '',
-      parent_id: cat.parent_id || '',
-      sort_order: String(cat.sort_order),
-      description: cat.description || '',
+      name_uz: cat.name_uz, slug: cat.slug, icon: cat.icon || '',
+      parent_id: cat.parent_id || '', sort_order: String(cat.sort_order), description: cat.description || '',
     });
     setShowForm(true);
   };
@@ -109,40 +100,71 @@ export default function Categories({ adminId }: CategoriesProps) {
     setForm({ name_uz: '', slug: '', icon: '', parent_id: '', sort_order: '0', description: '' });
   };
 
+  const toggleExpand = (id: string) => {
+    const next = new Set(expanded);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setExpanded(next);
+  };
+
   function renderCategoryTree(items: any[], parentId: string | null = null, depth = 0): any[] {
-    return items
-      .filter((c: any) => c.parent_id === parentId)
-      .flatMap((cat: any) => [
+    const children = items.filter((c: any) => c.parent_id === parentId);
+    if (!children.length && depth > 0) return [];
+
+    return children.flatMap((cat: any) => {
+      const hasChildren = items.some((c: any) => c.parent_id === cat.id);
+      const isExpanded = expanded.has(cat.id);
+
+      return [
         <div
           key={cat.id}
-          className="flex items-center justify-between py-2 px-3 hover:bg-dark-50 rounded-lg group"
-          style={{ paddingLeft: `${depth * 24 + 12}px` }}
+          className={`flex items-center justify-between px-4 py-3 transition-colors animate-fade-in
+            ${depth === 0 ? 'bg-white/50 border-b border-dark-100/50' : 'hover:bg-dark-50/50'}
+          `}
         >
-          <div className="flex items-center gap-2">
-            <span>{cat.icon || '📁'}</span>
-            <span className="text-sm font-medium">{cat.name_uz}</span>
-            <span className="text-xs text-dark-400">({cat.product_count || 0})</span>
-            {!cat.is_active && <span className="badge-red">Arxiv</span>}
+          <div
+            className="flex items-center gap-2.5 flex-1 cursor-pointer"
+            style={{ paddingLeft: `${depth * 20}px` }}
+            onClick={() => hasChildren && toggleExpand(cat.id)}
+          >
+            {hasChildren ? (
+              isExpanded ? <FiChevronDown className="w-4 h-4 text-dark-400" /> : <FiChevronRight className="w-4 h-4 text-dark-400" />
+            ) : (
+              <div className="w-4" />
+            )}
+            <span className="text-lg flex-shrink-0">{cat.icon || '📁'}</span>
+            <div>
+              <span className="text-sm font-medium text-dark-900">{cat.name_uz}</span>
+              <span className="text-xs text-dark-400 ml-2">({cat.product_count || 0})</span>
+            </div>
+            {!cat.is_active && <span className="badge-red text-[10px]">Arxiv</span>}
           </div>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => editCategory(cat)} className="p-1.5 hover:bg-dark-100 rounded">
-              <FiEdit2 className="w-4 h-4" />
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+            <button
+              onClick={() => editCategory(cat)}
+              className="btn-ghost p-2 rounded-lg hover:bg-primary-50 hover:text-primary-600"
+            >
+              <FiEdit2 className="w-3.5 h-3.5" />
             </button>
-            <button onClick={() => deleteMutation.mutate(cat.id)} className="p-1.5 hover:bg-red-50 rounded text-red-500">
-              <FiTrash2 className="w-4 h-4" />
+            <button
+              onClick={() => deleteMutation.mutate(cat.id)}
+              className="btn-ghost p-2 rounded-lg hover:bg-red-50 hover:text-red-600"
+            >
+              <FiTrash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>,
-        ...renderCategoryTree(items, cat.id, depth + 1),
-      ]);
+        ...(hasChildren && isExpanded ? renderCategoryTree(items, cat.id, depth + 1) : []),
+      ];
+    });
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="animate-fade-in space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Kategoriyalar</h1>
-          <p className="text-dark-500 text-sm mt-1">Barcha kategoriyalarni boshqaring</p>
+          <h1 className="text-2xl font-bold text-dark-900">Kategoriyalar</h1>
+          <p className="text-sm text-dark-500 mt-1">Barcha kategoriyalarni boshqaring</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
@@ -152,98 +174,77 @@ export default function Categories({ adminId }: CategoriesProps) {
         </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div className="card mb-6 animate-fade-in">
-          <h2 className="font-bold mb-4">{editing ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya'}</h2>
+        <div className="card animate-scale-in border-l-4 border-l-primary-500">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+              {editing ? <FiEdit2 className="w-4 h-4 text-white" /> : <FiPlus className="w-4 h-4 text-white" />}
+            </div>
+            <h2 className="font-bold text-dark-900">{editing ? 'Kategoriyani tahrirlash' : 'Yangi kategoriya'}</h2>
+          </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Nomi (UZ) *</label>
-              <input
-                type="text"
-                value={form.name_uz}
-                onChange={(e) => setForm({ ...form, name_uz: e.target.value })}
-                className="input-field"
-                required
-              />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Nomi (UZ) *</label>
+              <input type="text" value={form.name_uz} onChange={(e) => setForm({ ...form, name_uz: e.target.value })} className="input-field" required />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Slug</label>
-              <input
-                type="text"
-                value={form.slug}
-                onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                className="input-field"
-                placeholder="Avtomatik yaratiladi"
-              />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Slug</label>
+              <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input-field" placeholder="Avtomatik yaratiladi" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Icon (emoji)</label>
-              <input
-                type="text"
-                value={form.icon}
-                onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                className="input-field"
-                placeholder="📁"
-              />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Icon (emoji)</label>
+              <input type="text" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className="input-field" placeholder="📁" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Ota-kategoriya</label>
-              <select
-                value={form.parent_id}
-                onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
-                className="input-field"
-              >
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Ota-kategoriya</label>
+              <select value={form.parent_id} onChange={(e) => setForm({ ...form, parent_id: e.target.value })} className="input-field">
                 <option value="">Yo'q (asosiy kategoriya)</option>
                 {(categories || []).map((cat: any) => (
-                  <option key={cat.id} value={cat.id}>
-                    {'—'.repeat(cat.level)} {cat.name_uz}
-                  </option>
+                  <option key={cat.id} value={cat.id}>{'—'.repeat(cat.level)} {cat.name_uz}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Tartib</label>
-              <input
-                type="number"
-                value={form.sort_order}
-                onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
-                className="input-field"
-              />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Tartib</label>
+              <input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} className="input-field" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Tavsif</label>
-              <input
-                type="text"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="input-field"
-              />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Tavsif</label>
+              <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input-field" />
             </div>
-            <div className="md:col-span-2 flex gap-2">
-              <button type="submit" className="btn-primary">
-                {editing ? 'Saqlash' : 'Qo\'shish'}
-              </button>
-              <button type="button" onClick={resetForm} className="btn-secondary">
-                Bekor qilish
-              </button>
+            <div className="md:col-span-2 flex gap-3 pt-2">
+              <button type="submit" className="btn-primary">{editing ? 'Saqlash' : 'Qo\'shish'}</button>
+              <button type="button" onClick={resetForm} className="btn-secondary">Bekor qilish</button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Category list */}
-      <div className="card">
+      {/* Category tree */}
+      <div className="card overflow-hidden p-0">
+        <div className="px-4 py-3 border-b border-dark-100/50 bg-dark-50/30">
+          <div className="flex items-center gap-2">
+            <FiFolder className="w-4 h-4 text-dark-400" />
+            <span className="text-xs font-semibold text-dark-500 uppercase tracking-wider">
+              Kategoriyalar ({categories?.length || 0})
+            </span>
+          </div>
+        </div>
         {isLoading ? (
-          <div className="space-y-3 animate-pulse">
+          <div className="p-4 space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-10 skeleton rounded-lg" />
+              <div key={i} className="skeleton h-12 rounded-lg" style={{ animationDelay: `${i * 50}ms` }} />
             ))}
           </div>
         ) : !categories?.length ? (
-          <p className="text-dark-400 text-center py-8">Kategoriyalar mavjud emas</p>
+          <div className="text-center py-12 text-dark-400 text-sm">
+            <FiFolder className="w-8 h-8 mx-auto mb-2 text-dark-300" />
+            Kategoriyalar mavjud emas
+          </div>
         ) : (
-          <div className="divide-y">
-            {renderCategoryTree(categories)}
+          <div className="divide-y divide-dark-100/50">
+            {renderCategoryTree(categories, null, 0)}
           </div>
         )}
       </div>
