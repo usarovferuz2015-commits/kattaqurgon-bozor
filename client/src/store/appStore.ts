@@ -26,6 +26,10 @@ interface AppState {
   cartCount: number;
   cartTotal: number;
 
+  // Favorites (local)
+  favoriteIds: string[];
+  favoriteProducts: any[];
+
   // Actions
   initTg: () => void;
   setUser: (user: any) => void;
@@ -39,6 +43,10 @@ interface AppState {
   updateCartQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   setCart: (items: CartItem[]) => void;
+
+  // Favorite actions
+  toggleFavorite: (productId: string, productData?: any) => void;
+  isFavorite: (productId: string) => boolean;
 }
 
 export const useAppStore = create<AppState>()(
@@ -53,6 +61,8 @@ export const useAppStore = create<AppState>()(
       cart: [],
       cartCount: 0,
       cartTotal: 0,
+      favoriteIds: [],
+      favoriteProducts: [],
 
       initTg: () => {
         try {
@@ -146,6 +156,23 @@ export const useAppStore = create<AppState>()(
 
       clearCart: () => set({ cart: [], cartCount: 0, cartTotal: 0 }),
 
+      toggleFavorite: (productId, productData) => {
+        const state = get();
+        const exists = state.favoriteIds.includes(productId);
+        set({
+          favoriteIds: exists
+            ? state.favoriteIds.filter((id) => id !== productId)
+            : [...state.favoriteIds, productId],
+          favoriteProducts: exists
+            ? state.favoriteProducts.filter((p: any) => p.id !== productId)
+            : productData
+              ? [...state.favoriteProducts, productData]
+              : state.favoriteProducts,
+        });
+      },
+
+      isFavorite: (productId) => get().favoriteIds.includes(productId),
+
       setCart: (items) =>
         set({
           cart: items,
@@ -159,6 +186,8 @@ export const useAppStore = create<AppState>()(
         cart: state.cart,
         cartCount: state.cartCount,
         cartTotal: state.cartTotal,
+        favoriteIds: state.favoriteIds,
+        favoriteProducts: state.favoriteProducts,
       }),
     }
   )

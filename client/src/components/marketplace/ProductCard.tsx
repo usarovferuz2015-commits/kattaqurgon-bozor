@@ -8,9 +8,16 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, cart, telegramId } = useAppStore();
+  const { addToCart, cart, telegramId, toggleFavorite, isFavorite } = useAppStore();
   const primaryImage = product.images?.[0]?.url || '/placeholder.svg';
   const isInCart = cart.some((i) => i.product_id === product.id);
+  const favorited = isFavorite(product.id);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(product.id, product);
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,10 +62,22 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         {product.is_premium && (
-          <span className="absolute top-2 right-2 bg-accent-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+          <span className="absolute top-2 left-2 mt-8 bg-accent-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
             VIP
           </span>
         )}
+
+        {/* Heart / Favorite */}
+        <button
+          onClick={handleToggleFavorite}
+          className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${
+            favorited
+              ? 'bg-red-500 text-white scale-110'
+              : 'bg-white/90 text-gray-400 hover:text-red-500 hover:bg-white'
+          }`}
+        >
+          <FiHeart className={`w-4 h-4 transition-all ${favorited ? 'fill-current' : ''}`} />
+        </button>
 
         <button
           onClick={handleAddToCart}
