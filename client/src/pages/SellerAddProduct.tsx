@@ -29,6 +29,7 @@ export default function SellerAddProduct() {
   });
   const [imageUrl, setImageUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories-flat'],
@@ -66,6 +67,11 @@ export default function SellerAddProduct() {
 
     if (!form.name_uz || !form.price) {
       toast.error('Nomi va narxi majburiy');
+      return;
+    }
+
+    if (form.images.length === 0) {
+      toast.error(`Kamida bitta rasm yuklash majburiy! Iltimos, "Rasm yuklash" tugmasini bosing.`);
       return;
     }
 
@@ -118,6 +124,43 @@ export default function SellerAddProduct() {
     setForm({ ...form, images: form.images.filter((_, i) => i !== index) });
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Rasm hajmi 5MB dan oshmasligi kerak');
+      return;
+    }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      try {
+        const base64data = reader.result as string;
+        const res = await fetch(`/api/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: base64data }),
+        });
+        const json = await res.json();
+        if (json.success && json.data?.url) {
+          setForm((prev) => ({ ...prev, images: [...prev.images, json.data.url] }));
+          toast.success('Rasm muvaffaqiyatli yuklandi!');
+        } else {
+          toast.error(json.error || 'Rasm yuklashda xatolik yuz berdi');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast.error('Serverga ulanishda xatolik yuz berdi');
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
@@ -133,36 +176,86 @@ export default function SellerAddProduct() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Images */}
           <div className="card p-4">
-            <label className="block text-sm font-medium text-dark-700 mb-2">Rasmlar (URL)</label>
-            <p className="text-xs text-dark-400 mb-3">Rasm URL manzilini kiriting. Agar rasmingiz bo'lmasa, bo'sh qoldiring.</p>
+            <label className="block text-sm font-medium text-dark-700 mb-2">
+              Rasmlar <span className="text-red-500">*</span>
+            </label>
+
+            {/* File upload area */}
+            <label className="block cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="image-upload"
+              />
+              <div className={`
+                border-2 border-dashed rounded-2xl p-6 text-center transition-all
+                ${uploadingImage
+                  ? 'border-primary-300 bg-primary-50'
+                  : 'border-dark-200 hover:border-primary-400 hover:bg-primary-50/50'
+                }
+              `}>
+                {uploadingImage ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 rounded-full border-2 border-primary-300 border-t-primary-600 animate-spin" />
+                    <p className="text-sm font-medium text-primary-600">Yuklanmoqda...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-2xl bg-primary-100 flex items-center justify-center">
+                      <FiUpload className="w-6 h-6 text-primary-600" />
+                    </div>
+                    <p className="text-sm font-semibold text-dark-700">Rasm yuklash</p>
+                    <p className="text-xs text-dark-400">Kamera yoki galereyadan rasm tanlang</p>
+                    <span className="text-[10px] text-dark-300">Max: 5MB, JPG/PNG/WebP</span>
+                  </div>
+                )}
+              </div>
+            </label>
+
+            {/* Uploaded images preview */}
             {form.images.length > 0 && (
-              <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar">
+              <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
                 {form.images.map((url, index) => (
-                  <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                  <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border-2 border-primary-200 shadow-sm">
                     <img src={url} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
-                      onClick={() => setForm({ ...form, images: form.images.filter((_, i) => i !== index) })}
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
                       <FiX className="w-3 h-3" />
                     </button>
+                    {index === 0 && (
+                      <span className="absolute bottom-0 inset-x-0 bg-primary-600 text-white text-[8px] font-bold text-center py-0.5">
+                        Asosiy
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
             )}
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://example.com/rasm.jpg"
-                className="input-field flex-1 text-sm"
-              />
-              <button type="button" onClick={addImage} className="btn-secondary text-sm px-4">
-                <FiUpload className="w-4 h-4" />
-              </button>
-            </div>
+
+            {/* URL paste option (secondary) */}
+            <details className="mt-3 group">
+              <summary className="text-xs text-dark-400 cursor-pointer hover:text-primary-600 transition-colors font-medium">
+                Yoki rasm URL manzilini kiriting
+              </summary>
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/rasm.jpg"
+                  className="input-field flex-1 text-sm"
+                />
+                <button type="button" onClick={addImage} className="btn-secondary text-sm px-4 flex items-center gap-1">
+                  <FiUpload className="w-4 h-4" />
+                  Qo'shish
+                </button>
+              </div>
+            </details>
           </div>
 
           {/* Name */}
