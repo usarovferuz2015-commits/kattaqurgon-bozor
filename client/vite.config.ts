@@ -27,6 +27,7 @@ export default defineConfig({
     target: 'es2015',
     rollupOptions: {
       output: {
+        format: 'iife',
         inlineDynamicImports: true,
       },
     },
