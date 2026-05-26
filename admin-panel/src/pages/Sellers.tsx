@@ -6,6 +6,7 @@ import {
   FiStar, FiPackage, FiUsers, FiTrendingUp
 } from 'react-icons/fi';
 import { useState } from 'react';
+import PageHeader from '../components/PageHeader';
 
 interface SellersProps {
   adminId: number;
@@ -83,28 +84,34 @@ export default function Sellers({ adminId }: SellersProps) {
   ];
 
   return (
-    <div className="animate-fade-in space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-900 flex items-center gap-2">
-            <FiUsers className="text-violet-500" /> Sotuvchilar
-          </h1>
-          <p className="text-sm text-dark-500 mt-1">Do'konlar va sotuvchilarni boshqarish markazi</p>
-        </div>
-        <div className="relative">
-          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
-          <input
-            type="text"
-            placeholder="Do'kon yoki ID bo'yicha qidirish..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input-field pl-10 py-2.5 text-sm w-full sm:w-72 rounded-xl"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-700">
-              <FiX className="w-4 h-4" />
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-dark-50 to-dark-100">
+      <PageHeader
+        title="Sotuvchilar"
+        subtitle="Do'konlar va sotuvchilarni boshqarish"
+      />
+      <div className="page-container pt-5 space-y-4">
+        {/* Header */}
+        <div className="card">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-bold text-dark-900 flex items-center gap-2">
+                <FiUsers className="text-violet-500" /> Sotuvchilar
+              </h1>
+              <p className="text-sm text-dark-500 mt-1">Do'konlar va sotuvchilarni boshqarish markazi</p>
+            </div>
+            <div className="relative">
+              <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+              <input
+                type="text"
+                placeholder="Qidirish..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input-field pl-10 py-2.5 text-sm w-full sm:w-72 rounded-xl"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-700">
+                  <FiX className="w-4 h-4" />
+                </button>
           )}
         </div>
       </div>
@@ -253,6 +260,8 @@ export default function Sellers({ adminId }: SellersProps) {
           ))}
         </div>
       )}
+      </div>
+      </div>
     </div>
   );
 }

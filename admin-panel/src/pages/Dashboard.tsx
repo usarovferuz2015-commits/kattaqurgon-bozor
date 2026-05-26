@@ -8,6 +8,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
+import PageHeader from '../components/PageHeader';
 
 interface DashboardProps {
   adminId: number;
@@ -71,18 +72,23 @@ export default function Dashboard({ adminId }: DashboardProps) {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-900">Dashboard</h1>
-          <p className="text-sm text-dark-500 mt-1">Marketplace statistikasi va tahlillar</p>
+    <div className="min-h-screen bg-gradient-to-br from-dark-50 to-dark-100">
+      <PageHeader
+        title="Dashboard"
+        subtitle="Marketplace statistikasi"
+      />
+      <div className="page-container space-y-5 pt-5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="page-title">Dashboard</h1>
+            <p className="text-sm text-dark-500 mt-1">Marketplace statistikasi va tahlillar</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-xl border border-dark-100/50">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-medium text-dark-500">So'nggi 7 kun</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-xl border border-dark-100/50">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-medium text-dark-500">So'nggi 7 kun</span>
-        </div>
-      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -295,6 +301,7 @@ export default function Dashboard({ adminId }: DashboardProps) {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

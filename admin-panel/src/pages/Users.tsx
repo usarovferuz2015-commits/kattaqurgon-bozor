@@ -3,6 +3,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { FiUsers, FiSearch, FiShield, FiUserX, FiUserCheck, FiX, FiCalendar } from 'react-icons/fi';
 import { useState } from 'react';
+import PageHeader from '../components/PageHeader';
 
 interface UsersProps {
   adminId: number;

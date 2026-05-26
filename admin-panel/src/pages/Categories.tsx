@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit2, FiTrash2, FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi';
+import PageHeader from '../components/PageHeader';
 
 interface CategoriesProps {
   adminId: number;
@@ -159,24 +160,19 @@ export default function Categories({ adminId }: CategoriesProps) {
   }
 
   return (
-    <div className="animate-fade-in space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-900">Kategoriyalar</h1>
-          <p className="text-sm text-dark-500 mt-1">Barcha kategoriyalarni boshqaring</p>
-        </div>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="btn-primary flex items-center gap-2"
-        >
-          <FiPlus className="w-4 h-4" /> Yangi kategoriya
-        </button>
-      </div>
-
-      {/* Form */}
-      {showForm && (
-        <div className="card animate-scale-in border-l-4 border-l-primary-500">
+    <div className="min-h-screen bg-gradient-to-br from-dark-50 to-dark-100">
+      <PageHeader
+        title="Kategoriyalar"
+        subtitle="Barcha kategoriyalarni boshqaring"
+        action={
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary flex items-center gap-2 py-2.5 px-4">
+            <FiPlus className="w-4 h-4" /> Yangi
+          </button>
+        }
+      />
+      <div className="page-container pt-5 space-y-4">
+        {showForm && (
+          <div className="card animate-scale-in border-l-4 border-l-primary-500">
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
               {editing ? <FiEdit2 className="w-4 h-4 text-white" /> : <FiPlus className="w-4 h-4 text-white" />}
@@ -247,6 +243,7 @@ export default function Categories({ adminId }: CategoriesProps) {
             {renderCategoryTree(categories, null, 0)}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
