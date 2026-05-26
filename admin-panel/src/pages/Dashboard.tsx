@@ -97,14 +97,14 @@ export default function Dashboard({ adminId }: DashboardProps) {
             >
               <div className="flex items-start justify-between relative z-10">
                 <div>
-                  <p className="text-sm font-medium text-dark-500">{stat.label}</p>
-                  <p className="text-3xl font-bold text-dark-900 mt-2">
+                  <p className="stat-label">{stat.label}</p>
+                  <p className="stat-value">
                     {value.toLocaleString()}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <FiArrowUp className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-xs font-medium text-emerald-600">{stat.trend}</span>
-                    <span className="text-xs text-dark-400">o'tgan hafta</span>
+                  <div className="flex items-center gap-1.5 mt-3">
+                    <FiArrowUp className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm font-medium text-emerald-600">{stat.trend}</span>
+                    <span className="text-sm text-dark-400">o'tgan hafta</span>
                   </div>
                 </div>
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
