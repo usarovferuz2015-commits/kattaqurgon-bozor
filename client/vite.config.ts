@@ -1,32 +1,34 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { readFileSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import path from 'path';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    {
-      name: 'fix-script-tag',
-      closeBundle() {
-        const htmlPath = resolve(__dirname, 'dist', 'index.html');
-        try {
-          let html = readFileSync(htmlPath, 'utf-8');
-          html = html.replace('<script type="module" crossorigin src="', '<script src="');
-          html = html.replace('<script type="module" crossorigin>', '<script>');
-          writeFileSync(htmlPath, html, 'utf-8');
-        } catch (e) {
-          console.error('Failed:', e);
-        }
-      },
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@shared': path.resolve(__dirname, '../shared'),
     },
-  ],
+  },
   build: {
-    target: 'es2015',
+    outDir: 'dist',
+    sourcemap: false,
+    minify: 'terser',
     rollupOptions: {
       output: {
-        format: 'iife',
-        inlineDynamicImports: true,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['react-icons'],
+        },
+      },
+    },
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
       },
     },
   },
