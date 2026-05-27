@@ -7,6 +7,7 @@ import { categoryService } from '../services/category.service';
 import { sellerService } from '../services/seller.service';
 import { analyticsService } from '../services/analytics.service';
 import { userService } from '../services/user.service';
+import { adminService } from '../services/admin.service';
 import { notifyContactSeller } from '../bot';
 
 const router = Router();
@@ -51,7 +52,7 @@ router.get('/homepage', async (_req: Request, res: Response) => {
     const [products, categories, banners] = await Promise.all([
       productService.getHomepageProducts(),
       categoryService.getFeatured(),
-      categoryService.getTree(),
+      adminService.getAllBanners(),
     ]);
 
     res.json({
@@ -60,6 +61,7 @@ router.get('/homepage', async (_req: Request, res: Response) => {
         ...products,
         categories,
         categoryTree: categories,
+        banners: banners.filter((b: any) => b.is_active !== false),
       },
     });
   } catch (error: any) {

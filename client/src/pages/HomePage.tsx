@@ -55,7 +55,7 @@ export default function HomePage() {
         {isLoading ? (
           <BannerSkeleton />
         ) : (
-          <BannerCarousel />
+          <BannerCarousel banners={homepageData?.banners} />
         )}
 
         {/* Categories */}
