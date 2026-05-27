@@ -1,23 +1,76 @@
 // ============================================
 // Review (Rating & Comments) Service
 // ============================================
-// Requires the following Supabase table:
-// 
-//   CREATE TABLE IF NOT EXISTS product_reviews (
-//     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//     product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-//     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-//     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-//     comment TEXT,
-//     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-//     UNIQUE(product_id, user_id)
-//   );
-//   ALTER TABLE products ADD COLUMN IF NOT EXISTS avg_rating DECIMAL(2,1) DEFAULT 0;
-//   ALTER TABLE products ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0;
-//
-// ============================================
 import { getSupabaseClient } from './supabase';
+import { config } from '../config';
 import type { ProductReview, ReviewCreateInput } from '../types';
+
+const MIGRATION_SQL = `
+  CREATE TABLE IF NOT EXISTS product_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(product_id, user_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON product_reviews(product_id);
+  CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON product_reviews(user_id);
+
+  ALTER TABLE products ADD COLUMN IF NOT EXISTS avg_rating DECIMAL(2,1) DEFAULT 0;
+  ALTER TABLE products ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0;
+`;
+
+let tableReady = false;
+
+async function ensureReviewTables(): Promise<void> {
+  if (tableReady) return;
+
+  const supabase = getSupabaseClient();
+  try {
+    // Check if table already exists
+    await supabase.from('product_reviews').select('id').limit(1);
+    tableReady = true;
+    return;
+  } catch {
+    // Table doesn't exist
+  }
+
+  // Try to create via direct SQL using DATABASE_URL
+  if (!config.database.url) {
+    console.warn(
+      'DATABASE_URL topilmadi. Supabase SQL Editor da quyidagi SQL-ni ishga tushiring:\n' +
+      MIGRATION_SQL
+    );
+    tableReady = true; // Don't retry, user needs to run migration manually
+    return;
+  }
+
+  try {
+    // Dynamic import for pg (ESM-safe)
+    const { Pool } = await import('pg');
+    const pool = new Pool({
+      connectionString: config.database.url,
+    });
+
+    try {
+      await pool.query(MIGRATION_SQL);
+      console.log('product_reviews table created successfully');
+      tableReady = true;
+    } finally {
+      await pool.end();
+    }
+  } catch (err: any) {
+    console.error('Failed to run migration:', err.message);
+    console.warn(
+      'Jadval yaratishda xatolik. Supabase SQL Editor da quyidagi SQL-ni ishga tushiring:\n' +
+      MIGRATION_SQL
+    );
+    tableReady = true; // Don't retry
+  }
+}
 
 export class ReviewService {
   private get db() {
@@ -25,6 +78,8 @@ export class ReviewService {
   }
 
   async getByProductId(productId: string): Promise<ProductReview[]> {
+    await ensureReviewTables();
+
     const { data } = await this.db
       .from('product_reviews')
       .select(`
@@ -38,6 +93,8 @@ export class ReviewService {
   }
 
   async create(input: ReviewCreateInput): Promise<ProductReview> {
+    await ensureReviewTables();
+
     const { data: user } = await this.db
       .from('users')
       .select('id')
@@ -45,7 +102,7 @@ export class ReviewService {
       .single();
 
     if (!user) {
-      throw new Error('Foydalanuvchi topilmadi. Iltimos, avval ro\'yxatdan o\'ting.');
+      throw new Error("Foydalanuvchi topilmadi. Iltimos, avval ro'yxatdan o'ting.");
     }
 
     // Upsert: update if exists, insert if not
@@ -93,6 +150,8 @@ export class ReviewService {
   }
 
   async getUserReview(productId: string, telegramId: number): Promise<ProductReview | null> {
+    await ensureReviewTables();
+
     const { data: user } = await this.db
       .from('users')
       .select('id')
@@ -112,6 +171,8 @@ export class ReviewService {
   }
 
   async delete(reviewId: string, telegramId: number): Promise<void> {
+    await ensureReviewTables();
+
     const { data: user } = await this.db
       .from('users')
       .select('id')

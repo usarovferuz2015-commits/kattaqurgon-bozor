@@ -33,6 +33,9 @@ export const config = {
       .split(',')
       .map(s => s.trim()),
   },
+  database: {
+    url: process.env.DATABASE_URL || '',
+  },
 };
 
 export function isAdmin(telegramId: number): boolean {
