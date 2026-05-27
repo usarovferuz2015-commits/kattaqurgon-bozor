@@ -16,6 +16,7 @@ import cartRoutes from './api/cart';
 import sellerRoutes from './api/sellers';
 import adminRoutes from './api/admin';
 import uploadRoutes from './api/upload';
+import reviewRoutes from './api/reviews';
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // === Health check ===
 app.get('/health', (_req, res) => {

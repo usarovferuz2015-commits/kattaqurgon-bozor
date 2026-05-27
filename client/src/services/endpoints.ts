@@ -181,3 +181,26 @@ export const adminService = {
     return data;
   },
 };
+
+export const reviewService = {
+  getByProduct: async (productId: string) => {
+    const { data } = await api.get(`/reviews/${productId}`);
+    return data;
+  },
+  getMyReview: async (productId: string, telegramId: number) => {
+    const { data } = await api.get(`/reviews/${productId}/my`, {
+      params: { telegram_id: telegramId },
+    });
+    return data;
+  },
+  create: async (reviewData: { telegram_id: number; product_id: string; rating: number; comment?: string }) => {
+    const { data } = await api.post('/reviews', reviewData);
+    return data;
+  },
+  delete: async (reviewId: string, telegramId: number) => {
+    const { data } = await api.delete(`/reviews/${reviewId}`, {
+      data: { telegram_id: telegramId },
+    });
+    return data;
+  },
+};

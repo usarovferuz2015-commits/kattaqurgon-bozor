@@ -4,7 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { productService } from '../services/endpoints';
 import { useAppStore } from '../store/appStore';
 import toast from 'react-hot-toast';
-import { FiShoppingCart, FiHeart, FiShare2, FiArrowLeft, FiMessageCircle, FiPhone } from 'react-icons/fi';
+import { FiShoppingCart, FiHeart, FiShare2, FiArrowLeft, FiMessageCircle, FiPhone, FiStar } from 'react-icons/fi';
+import StarRating from '../components/marketplace/StarRating';
+import Reviews from '../components/marketplace/Reviews';
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -230,6 +232,16 @@ export default function ProductPage() {
           {product.name_uz}
         </h1>
 
+        {/* Rating */}
+        {product.rating_count > 0 && (
+          <div className="flex items-center gap-2">
+            <StarRating rating={Math.round(product.avg_rating || 0)} size="sm" />
+            <span className="text-sm text-dark-500">
+              {product.avg_rating?.toFixed(1)} ({product.rating_count} ta izoh)
+            </span>
+          </div>
+        )}
+
         {/* Seller */}
         <Link
           to={`/seller/${product.seller?.id}`}
@@ -314,6 +326,16 @@ export default function ProductPage() {
               <p className="text-sm font-medium">{product.unit}</p>
             </div>
           )}
+        </div>
+
+        {/* Reviews Section */}
+        <div className="border-t border-gray-100 pt-5">
+          <Reviews
+            productId={product.id}
+            productSlug={product.slug}
+            avgRating={product.avg_rating || 0}
+            ratingCount={product.rating_count || 0}
+          />
         </div>
       </div>
 

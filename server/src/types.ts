@@ -462,6 +462,24 @@ export interface Notification {
   created_at: string;
 }
 
+// === Review ===
+export interface ProductReview {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  user?: { first_name: string; username: string | null };
+  created_at: string;
+}
+
+export interface ReviewCreateInput {
+  telegram_id: number;
+  product_id: string;
+  rating: number;
+  comment?: string;
+}
+
 // === Search ===
 export interface SearchResult {
   products: Product[];
