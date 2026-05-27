@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiImage } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiImage, FiUpload, FiX } from 'react-icons/fi';
+import PageHeader from '../components/PageHeader';
 
 interface BannersProps {
   adminId: number;
@@ -12,6 +13,7 @@ export default function Banners({ adminId }: BannersProps) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [form, setForm] = useState({
     title_uz: '', subtitle_uz: '', image_url: '', link_type: 'product',
     link_value: '', sort_order: '0', bg_color: '#16a34a', button_text_uz: 'Batafsil',
@@ -63,6 +65,10 @@ export default function Banners({ adminId }: BannersProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.image_url) {
+      toast.error('Rasm yuklash yoki URL kiritish majburiy');
+      return;
+    }
     const payload = { ...form, sort_order: parseInt(form.sort_order) };
     if (editing) updateMutation.mutate({ id: editing.id, ...payload });
     else createMutation.mutate(payload);
@@ -86,19 +92,54 @@ export default function Banners({ adminId }: BannersProps) {
       link_value: '', sort_order: '0', bg_color: '#16a34a', button_text_uz: 'Batafsil' });
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Rasm hajmi 5MB dan oshmasligi kerak');
+      return;
+    }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: reader.result }),
+        });
+        const json = await res.json();
+        if (json.success && json.data?.url) {
+          setForm({ ...form, image_url: json.data.url });
+          toast.success('Rasm yuklandi!');
+        } else {
+          toast.error(json.error || 'Rasm yuklashda xatolik');
+        }
+      } catch {
+        toast.error('Serverga ulanishda xatolik');
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+  };
+
   const banners = data || [];
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-900">Bannerlar</h1>
-          <p className="text-sm text-dark-500 mt-1">Marketplace bannerlarini boshqaring</p>
-        </div>
-        <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary flex items-center gap-2">
-          <FiPlus className="w-4 h-4" /> Yangi banner
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-dark-50 to-dark-100">
+      <PageHeader
+        title="Bannerlar"
+        subtitle="Marketplace bannerlarini boshqaring"
+        action={
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary flex items-center gap-2 py-2.5 px-4">
+            <FiPlus className="w-4 h-4" /> Yangi
+          </button>
+        }
+      />
+      <div className="page-container pt-5 space-y-4">
 
       {showForm && (
         <div className="card animate-scale-in border-l-4 border-l-primary-500">
@@ -114,14 +155,41 @@ export default function Banners({ adminId }: BannersProps) {
               <input type="text" value={form.title_uz} onChange={(e) => setForm({ ...form, title_uz: e.target.value })} className="input-field" required />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-dark-700 mb-1.5">Rasm URL *</label>
-              <div className="flex gap-3">
-                <input type="url" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="input-field flex-1" required />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Rasm *</label>
+              <div className="space-y-3">
+                <label className="block cursor-pointer">
+                  <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                  <div className={`border-2 border-dashed rounded-2xl p-5 text-center transition-all ${uploadingImage ? 'border-primary-300 bg-primary-50' : 'border-dark-200 hover:border-primary-400 hover:bg-primary-50/50'}`}>
+                    {uploadingImage ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 rounded-full border-2 border-primary-300 border-t-primary-600 animate-spin" />
+                        <p className="text-sm font-medium text-primary-600">Yuklanmoqda...</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <FiUpload className="w-6 h-6 text-dark-400" />
+                        <p className="text-sm font-medium text-dark-600">Rasm yuklash</p>
+                        <p className="text-xs text-dark-400">Kompyuter yoki telefondan rasm tanlang</p>
+                      </div>
+                    )}
+                  </div>
+                </label>
+
                 {form.image_url && (
-                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-dark-200 flex-shrink-0">
-                    <img src={form.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <div className="relative rounded-xl overflow-hidden border border-dark-200 bg-dark-50">
+                    <img src={form.image_url} alt="" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <button type="button" onClick={() => setForm({ ...form, image_url: '' })} className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600">
+                      <FiX className="w-4 h-4" />
+                    </button>
                   </div>
                 )}
+
+                <details className="group">
+                  <summary className="text-xs text-dark-400 cursor-pointer hover:text-primary-600 transition-colors font-medium">
+                    Yoki rasm URL manzilini kiriting
+                  </summary>
+                  <input type="url" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="input-field mt-2 text-sm" placeholder="https://example.com/rasm.jpg" />
+                </details>
               </div>
             </div>
             <div>
@@ -189,6 +257,7 @@ export default function Banners({ adminId }: BannersProps) {
             </div>
           ))
         )}
+      </div>
       </div>
     </div>
   );
