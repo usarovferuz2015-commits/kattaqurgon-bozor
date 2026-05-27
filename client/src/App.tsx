@@ -7,6 +7,7 @@ import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
 import CartPage from './pages/CartPage';
 import FavoritesPage from './pages/FavoritesPage';
+import CategoriesPage from './pages/CategoriesPage';
 import SellerDashboard from './pages/SellerDashboard';
 import SellerProducts from './pages/SellerProducts';
 import SellerAddProduct from './pages/SellerAddProduct';
@@ -26,6 +27,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:slug" element={<ProductPage />} />
         <Route path="/category/:slug" element={<CategoryPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />

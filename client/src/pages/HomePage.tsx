@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { productService, categoryService } from '../services/endpoints';
 import { useAppStore } from '../store/appStore';
@@ -60,14 +61,34 @@ export default function HomePage() {
         {/* Categories */}
         <section>
           <SectionHeader title="Kategoriyalar" link="/categories" />
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-            {isLoading
-              ? Array.from({ length: 6 }).map((_, i) => <CategorySkeleton key={i} />)
-              : (categoriesData || []).map((cat: any) => (
-                  <CategoryCard key={cat.id} category={cat} />
-                ))
-            }
-          </div>
+
+          {/* Bo'limchalar (horizontal pills grid) */}
+          {isLoading ? (
+            <div className="flex gap-2 flex-wrap">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-9 w-28 bg-dark-100 rounded-full animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {(categoriesData || []).map((cat: any) => (
+                <Link
+                  key={cat.id}
+                  to={`/category/${cat.slug}`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-dark-100 shadow-sm text-sm font-medium text-dark-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 hover:shadow-md active:scale-95 transition-all no-underline"
+                >
+                  <span className="text-lg">{cat.icon || '📁'}</span>
+                  <span>{cat.name_uz}</span>
+                </Link>
+              ))}
+              <Link
+                to="/categories"
+                className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-primary-50 border border-primary-200 text-sm font-medium text-primary-600 hover:bg-primary-100 transition-all no-underline"
+              >
+                <span>Barchasi →</span>
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* Premium Products */}
