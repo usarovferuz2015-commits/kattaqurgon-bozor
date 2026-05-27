@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiFolder, FiChevronRight, FiChevronDown, FiSmile } from 'react-icons/fi';
 import PageHeader from '../components/PageHeader';
+import EmojiPicker from '../components/EmojiPicker';
 
 interface CategoriesProps {
   adminId: number;
@@ -14,6 +15,7 @@ export default function Categories({ adminId }: CategoriesProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [form, setForm] = useState({
     name_uz: '', slug: '', icon: '', parent_id: '', sort_order: '0', description: '',
   });
@@ -189,8 +191,21 @@ export default function Categories({ adminId }: CategoriesProps) {
               <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input-field" placeholder="Avtomatik yaratiladi" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-700 mb-1.5">Icon (emoji)</label>
-              <input type="text" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className="input-field" placeholder="📁" />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Ikonka (emoji)</label>
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dark-200 bg-white hover:border-primary-300 hover:bg-primary-50/30 transition-all"
+              >
+                <span className="text-3xl">{form.icon || '📁'}</span>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium text-dark-700">
+                    {form.icon ? 'Ikonka tanlandi' : 'Ikonka tanlang'}
+                  </p>
+                  <p className="text-xs text-dark-400">Bosish orqali emoji tanlang</p>
+                </div>
+                <FiSmile className="w-5 h-5 text-dark-400" />
+              </button>
             </div>
             <div>
               <label className="block text-sm font-medium text-dark-700 mb-1.5">Ota-kategoriya</label>
@@ -214,6 +229,14 @@ export default function Categories({ adminId }: CategoriesProps) {
               <button type="button" onClick={resetForm} className="btn-secondary">Bekor qilish</button>
             </div>
           </form>
+
+          {showEmojiPicker && (
+            <EmojiPicker
+              value={form.icon}
+              onChange={(emoji) => setForm({ ...form, icon: emoji })}
+              onClose={() => setShowEmojiPicker(false)}
+            />
+          )}
         </div>
       )}
 
