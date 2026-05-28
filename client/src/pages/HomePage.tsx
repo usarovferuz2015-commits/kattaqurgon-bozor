@@ -59,36 +59,43 @@ export default function HomePage() {
           <BannerCarousel banners={homepageData?.banners} />
         )}
 
-        {/* Kategoriyalar */}
+        {/* Kategoriya ikonkalari */}
         <section>
-          <SectionHeader title="Kategoriyalar" link="/categories" />
-
-          {isLoading ? (
-            <div className="flex gap-2 flex-wrap">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-9 w-28 bg-dark-100 rounded-full animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {(categoriesData || []).map((cat: any) => (
+          {!isLoading && categoriesData?.length > 0 && (
+            <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1">
+              {(categoriesData || []).slice(0, 5).map((cat: any) => (
                 <Link
                   key={cat.id}
                   to={`/category/${cat.slug}`}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-dark-100 shadow-sm text-sm font-medium text-dark-700 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 hover:shadow-md active:scale-95 transition-all no-underline"
+                  className="flex flex-col items-center gap-1.5 flex-shrink-0 no-underline group"
                 >
-                  <span className="text-lg">{cat.icon || '📁'}</span>
-                  <span>{cat.name_uz}</span>
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center text-2xl group-hover:scale-110 group-hover:shadow-lg transition-all shadow-sm">
+                    {cat.icon || '📁'}
+                  </div>
+                  <span className="text-[10px] text-dark-600 font-medium text-center leading-tight">
+                    {cat.name_uz}
+                  </span>
                 </Link>
               ))}
+              <Link
+                to="/categories"
+                className="flex flex-col items-center gap-1.5 flex-shrink-0 no-underline group"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:shadow-lg group-hover:scale-110 transition-all">
+                  <span>All</span>
+                </div>
+                <span className="text-[10px] text-emerald-600 font-semibold text-center">
+                  Barchasi
+                </span>
+              </Link>
             </div>
           )}
         </section>
 
-        {/* Premium e'lonlar / Stories */}
+        {/* Reklamalar / Stories */}
         {homepageData?.banners?.length > 0 && (
           <section>
-            <SectionHeader title="📢 E'lonlar" />
+            <SectionHeader title="⚡ Shoshiling!" />
             <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
               {homepageData.banners.map((ad: any, idx: number) => (
                 <button
