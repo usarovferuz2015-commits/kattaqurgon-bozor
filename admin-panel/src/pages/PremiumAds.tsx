@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { FiTrash2, FiBarChart2, FiClock, FiTarget, FiPlus, FiEdit2 } from 'react-icons/fi';
+import { FiTrash2, FiBarChart2, FiClock, FiTarget, FiPlus, FiEdit2, FiUpload, FiX } from 'react-icons/fi';
 
 interface PremiumAdsProps {
   adminId: number;
@@ -12,6 +12,7 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [form, setForm] = useState({
     title_uz: '', position: 'featured', status: 'active',
     image_url: '', link_url: '',
@@ -80,6 +81,31 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
     setShowForm(false);
     setEditing(null);
     setForm({ title_uz: '', position: 'featured', status: 'active', image_url: '', link_url: '' });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('Rasm hajmi 5MB dan oshmasligi kerak'); return; }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: reader.result }),
+        });
+        const json = await res.json();
+        if (json.success && json.data?.url) {
+          setForm({ ...form, image_url: json.data.url });
+          toast.success('Rasm yuklandi!');
+        } else { toast.error(json.error || 'Xatolik'); }
+      } catch { toast.error('Serverga ulanishda xatolik'); }
+      finally { setUploadingImage(false); }
+    };
   };
 
   const ads = data || [];
@@ -175,8 +201,35 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark-700 mb-1.5">Rasm URL</label>
-              <input type="url" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="input-field" placeholder="https://..." />
+              <label className="block text-sm font-medium text-dark-700 mb-1.5">Rasm *</label>
+              <div className="space-y-2">
+                <label className="block cursor-pointer">
+                  <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                  <div className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${uploadingImage ? 'border-primary-300 bg-primary-50' : 'border-dark-200 hover:border-primary-400 hover:bg-primary-50/50'}`}>
+                    {uploadingImage ? (
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-6 h-6 rounded-full border-2 border-primary-300 border-t-primary-600 animate-spin" />
+                        <p className="text-xs font-medium text-primary-600">Yuklanmoqda...</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <FiUpload className="w-5 h-5 text-dark-400" />
+                        <p className="text-xs font-medium text-dark-600">Rasm yuklash</p>
+                      </div>
+                    )}
+                  </div>
+                </label>
+                {form.image_url && (
+                  <div className="relative rounded-xl overflow-hidden border border-dark-200">
+                    <img src={form.image_url} alt="" className="w-full h-24 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <button type="button" onClick={() => setForm({ ...form, image_url: '' })} className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"><FiX className="w-3.5 h-3.5" /></button>
+                  </div>
+                )}
+                <details className="group">
+                  <summary className="text-[10px] text-dark-400 cursor-pointer hover:text-primary-600 font-medium">Yoki URL kiriting</summary>
+                  <input type="url" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="input-field mt-1.5 text-xs" placeholder="https://..." />
+                </details>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-dark-700 mb-1.5">Havola URL</label>
