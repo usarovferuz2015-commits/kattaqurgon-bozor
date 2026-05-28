@@ -172,7 +172,10 @@ router.get('/ads', async (_req: Request, res: Response) => {
 
 router.post('/ads', async (req: Request, res: Response) => {
   try {
-    const ad = await adminService.createPremiumAd(req.body);
+    // Remove seller_id if empty (allows null)
+    const data = { ...req.body };
+    if (!data.seller_id) delete data.seller_id;
+    const ad = await adminService.createPremiumAd(data);
     res.status(201).json({ success: true, data: ad });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
