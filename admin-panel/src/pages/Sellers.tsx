@@ -3,7 +3,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import {
   FiCheck, FiX, FiShield, FiUserCheck, FiUserX, FiSearch,
-  FiStar, FiPackage, FiUsers, FiTrendingUp
+  FiStar, FiPackage, FiUsers, FiTrendingUp, FiTrash2
 } from 'react-icons/fi';
 import { useState } from 'react';
 import PageHeader from '../components/PageHeader';
@@ -49,6 +49,19 @@ export default function Sellers({ adminId }: SellersProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-sellers'] });
       toast.success('Sotuvchi holati o\'zgartirildi');
+    },
+    onError: () => toast.error('Xatolik yuz berdi'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/sellers/${id}`, {
+        headers: { 'X-Telegram-Id': adminId },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sellers'] });
+      toast.success('Sotuvchi o\'chirildi');
     },
     onError: () => toast.error('Xatolik yuz berdi'),
   });
@@ -194,10 +207,15 @@ export default function Sellers({ adminId }: SellersProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-dark-900 truncate">{seller.store_name}</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                     <code className="text-[10px] bg-dark-50 border border-dark-100 px-1.5 py-0.5 rounded text-dark-500">
                       ID: {seller.telegram_id}
                     </code>
+                    {seller.store_slug && (
+                      <code className="text-[10px] bg-primary-50 border border-primary-100 px-1.5 py-0.5 rounded text-primary-600">
+                        slug: {seller.store_slug}
+                      </code>
+                    )}
                     {seller.is_verified && (
                       <span className="text-[10px] font-semibold text-blue-600 flex items-center gap-0.5 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                         <FiCheck className="w-2.5 h-2.5" /> Tasdiqlangan
@@ -254,6 +272,16 @@ export default function Sellers({ adminId }: SellersProps) {
                 >
                   {seller.is_active ? <FiUserX className="w-3.5 h-3.5" /> : <FiUserCheck className="w-3.5 h-3.5" />}
                   {seller.is_active ? 'Bloklash' : 'Faollashtirish'}
+                </button>
+                <button
+                  onClick={() => {
+                    if (window.confirm(`"${seller.store_name}" do'konini butunlay o'chirishni xohlaysizmi?`)) {
+                      deleteMutation.mutate(seller.id);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold transition-all bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                >
+                  <FiTrash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

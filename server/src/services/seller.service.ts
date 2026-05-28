@@ -158,6 +158,14 @@ export class SellerService {
     if (error) throw error;
     return data;
   }
+
+  async delete(id: string): Promise<void> {
+    // Delete all products of this seller
+    await this.db.from('products').delete().eq('seller_id', id);
+    // Delete the seller
+    const { error } = await this.db.from('sellers').delete().eq('id', id);
+    if (error) throw error;
+  }
 }
 
 export const sellerService = new SellerService();

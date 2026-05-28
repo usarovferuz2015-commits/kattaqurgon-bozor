@@ -74,4 +74,14 @@ router.get('/top/list', async (_req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/sellers/:id
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    await sellerService.delete(String((req.params as any).id));
+    res.json({ success: true, message: 'Sotuvchi o\'chirildi' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
