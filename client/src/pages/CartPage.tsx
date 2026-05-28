@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { productService } from '../services/endpoints';
-import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag } from 'react-icons/fi';
+import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiMessageCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
@@ -16,14 +16,28 @@ export default function CartPage() {
       toast.error('Telegram profilingiz aniqlanmadi');
       return;
     }
+
+    const tg = (window as any)?.Telegram?.WebApp;
     setContacting(true);
+
     try {
-      // Har bir mahsulot uchun sotuvchiga xabar yuborish
+      // Avval API orqali xabar yuborishga urinamiz
       for (const item of cart) {
-        await productService.contactSeller(item.slug, telegramId);
+        try {
+          const res = await productService.contactSeller(item.slug, telegramId);
+          // Agar sotuvchining usernamesi bo'lsa, to'g'ridan-to'g'ri chat ochamiz
+          if (res.username && tg?.openTelegramLink) {
+            tg.openTelegramLink(`https://t.me/${res.username}`);
+          }
+        } catch {
+          // API xatolik bersa, to'g'ridan-to'g'ri chat ochishga harakat qilamiz
+          if (tg?.openTelegramLink) {
+            tg.openTelegramLink(`https://t.me/${item.seller_name}`);
+          }
+        }
       }
-      toast.success('Barcha sotuvchilarga xabar yuborildi!');
-    } catch (err: any) {
+      toast.success('Xaridor bilan bog\'lanish uchun so\'rov yuborildi');
+    } catch {
       toast.error('Xabar yuborishda xatolik yuz berdi');
     } finally {
       setContacting(false);
@@ -147,7 +161,7 @@ export default function CartPage() {
             disabled={contacting}
             className="btn-primary w-full flex items-center justify-center gap-2"
           >
-            {contacting ? 'Yuborilmoqda...' : 'Sotuvchiga yozish'}
+            {contacting ? 'Yuborilmoqda...' : <><FiMessageCircle className="w-5 h-5" /> Sotuvchiga yozish</>}
           </button>
           <p className="text-xs text-dark-400 text-center mt-2">
             To'lov sotuvchi bilan kelishilgan holda amalga oshiriladi
