@@ -61,7 +61,7 @@ export default function HomePage() {
 
         {/* Kategoriyalar */}
         <section>
-          <SectionHeader title="Kategoriyalar" link="/categories" />
+          <SectionHeader title="Kategoriyalar" />
 
           {isLoading ? (
             <div className="flex gap-2 flex-wrap">
