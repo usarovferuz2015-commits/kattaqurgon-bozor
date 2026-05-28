@@ -113,6 +113,16 @@ router.post('/sellers/:id/toggle', async (req: Request, res: Response) => {
   }
 });
 
+// PUT /api/admin/sellers/:id - Update seller fields (e.g. store_slug)
+router.put('/sellers/:id', async (req: Request, res: Response) => {
+  try {
+    const seller = await sellerService.updateById(String((req.params as any).id), req.body);
+    res.json({ success: true, data: seller });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // === Banners ===
 router.get('/banners', async (_req: Request, res: Response) => {
   try {

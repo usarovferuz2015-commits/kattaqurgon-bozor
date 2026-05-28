@@ -87,6 +87,18 @@ export class SellerService {
     return data;
   }
 
+  async updateById(id: string, updates: SellerUpdateInput): Promise<Seller> {
+    const { data, error } = await this.db
+      .from('sellers')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   async getAll(page = 1, limit = 20): Promise<{ data: Seller[]; total: number }> {
     const from = (page - 1) * limit;
     const to = from + limit - 1;

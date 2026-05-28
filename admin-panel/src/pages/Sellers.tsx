@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import { useState } from 'react';
 import PageHeader from '../components/PageHeader';
+import { FiEdit2 } from 'react-icons/fi';
 
 interface SellersProps {
   adminId: number;
@@ -65,6 +66,31 @@ export default function Sellers({ adminId }: SellersProps) {
     },
     onError: () => toast.error('Xatolik yuz berdi'),
   });
+
+  const updateSellerMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => {
+      await api.put(`/admin/sellers/${id}`, data, {
+        headers: { 'X-Telegram-Id': adminId },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sellers'] });
+      toast.success('Sotuvchi ma\'lumotlari yangilandi');
+    },
+    onError: () => toast.error('Xatolik yuz berdi'),
+  });
+
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [slugValue, setSlugValue] = useState('');
+
+  const handleSaveSlug = (sellerId: string) => {
+    if (!slugValue.trim()) {
+      toast.error('Slug bo\'sh bo\'lishi mumkin emas');
+      return;
+    }
+    updateSellerMutation.mutate({ id: sellerId, store_slug: slugValue.trim() });
+    setEditingSlug(null);
+  };
 
   const allSellers: any[] = data?.data || [];
 
@@ -211,10 +237,53 @@ export default function Sellers({ adminId }: SellersProps) {
                     <code className="text-[10px] bg-dark-50 border border-dark-100 px-1.5 py-0.5 rounded text-dark-500">
                       ID: {seller.telegram_id}
                     </code>
-                    {seller.store_slug && (
-                      <code className="text-[10px] bg-primary-50 border border-primary-100 px-1.5 py-0.5 rounded text-primary-600">
-                        slug: {seller.store_slug}
-                      </code>
+                    {seller.store_slug ? (
+                      <div className="flex items-center gap-1">
+                        <code className="text-[10px] bg-primary-50 border border-primary-100 px-1.5 py-0.5 rounded text-primary-600">
+                          slug: {seller.store_slug}
+                        </code>
+                        <button
+                          onClick={() => { setEditingSlug(seller.id); setSlugValue(seller.store_slug); }}
+                          className="p-0.5 text-dark-400 hover:text-primary-600 transition-colors"
+                        >
+                          <FiEdit2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setEditingSlug(seller.id); setSlugValue(''); }}
+                        className="text-[10px] bg-gray-50 border border-dashed border-gray-200 px-1.5 py-0.5 rounded text-dark-400 hover:text-primary-600 hover:border-primary-200 transition-colors"
+                      >
+                        + slug qo'shish
+                      </button>
+                    )}
+
+                    {/* Inline slug editor */}
+                    {editingSlug === seller.id && (
+                      <div className="flex items-center gap-1.5 mt-1.5 w-full">
+                        <input
+                          type="text"
+                          value={slugValue}
+                          onChange={(e) => setSlugValue(e.target.value)}
+                          className="flex-1 text-[10px] px-2 py-1 rounded-lg border border-primary-300 bg-white outline-none focus:ring-1 focus:ring-primary-500"
+                          placeholder="store-slug"
+                          autoFocus
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveSlug(seller.id); if (e.key === 'Escape') setEditingSlug(null); }}
+                        />
+                        <button
+                          onClick={() => handleSaveSlug(seller.id)}
+                          disabled={updateSellerMutation.isPending}
+                          className="text-[10px] px-2 py-1 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 disabled:opacity-50"
+                        >
+                          Saqlash
+                        </button>
+                        <button
+                          onClick={() => setEditingSlug(null)}
+                          className="text-[10px] px-2 py-1 bg-gray-100 text-dark-500 rounded-lg hover:bg-gray-200"
+                        >
+                          Bekor
+                        </button>
+                      </div>
                     )}
                     {seller.is_verified && (
                       <span className="text-[10px] font-semibold text-blue-600 flex items-center gap-0.5 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
