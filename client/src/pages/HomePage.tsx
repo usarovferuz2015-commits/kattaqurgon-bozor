@@ -40,7 +40,7 @@ export default function HomePage() {
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await categoryService.getFeatured();
+      const res = await categoryService.getAll();
       return res.data;
     },
   });
@@ -61,7 +61,7 @@ export default function HomePage() {
 
         {/* Kategoriyalar */}
         <section>
-          <SectionHeader title="Kategoriyalar" />
+          <SectionHeader title="Kategoriyalar" link="/categories" />
 
           {isLoading ? (
             <div className="flex gap-2 flex-wrap">
