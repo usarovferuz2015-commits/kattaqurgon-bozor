@@ -81,6 +81,9 @@ export default function BannerCarousel({
     if (banner.link_type === 'product' && banner.link_value) {
       return `/product/${banner.link_value}`;
     }
+    if (banner.link_type === 'seller' && banner.link_value) {
+      return `/seller/${banner.link_value}`;
+    }
     return '/';
   };
 

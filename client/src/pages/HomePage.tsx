@@ -279,6 +279,8 @@ export default function HomePage() {
                       ? `/category/${selectedAd.link_value}`
                       : selectedAd.link_type === 'product'
                       ? `/product/${selectedAd.link_value}`
+                      : selectedAd.link_type === 'seller'
+                      ? `/seller/${selectedAd.link_value}`
                       : selectedAd.link_value
                   }
                   target={selectedAd.link_type === 'external' ? '_blank' : '_self'}
@@ -286,7 +288,7 @@ export default function HomePage() {
                   className="w-full block text-center py-3.5 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-2xl shadow-lg shadow-primary-600/30 hover:shadow-primary-600/50 transition-all active:scale-[0.98]"
                 >
                   <span className="flex items-center justify-center gap-2">
-                    {selectedAd.button_text_uz || 'Batafsil'}
+                    {selectedAd.link_type === 'seller' ? '🏪 Do\'konga o\'tish' : selectedAd.button_text_uz || 'Batafsil'}
                     <FiArrowRight className="w-4 h-4" />
                   </span>
                 </a>

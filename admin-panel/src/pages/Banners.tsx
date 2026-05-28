@@ -212,7 +212,10 @@ export default function Banners({ adminId }: BannersProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-dark-700 mb-1.5">Havola qiymati</label>
-              <input type="text" value={form.link_value} onChange={(e) => setForm({ ...form, link_value: e.target.value })} className="input-field" placeholder="slug yoki URL" />
+              <input type="text" value={form.link_value} onChange={(e) => setForm({ ...form, link_value: e.target.value })} className="input-field" placeholder={form.link_type === 'seller' ? "store_slug (sotuvchi slug)" : form.link_type === 'product' ? "product_slug" : form.link_type === 'category' ? "category_slug" : "URL"} />
+              <p className="text-[10px] text-dark-400 mt-1">
+                {form.link_type === 'seller' ? 'Sotuvchi do\'konining slug manzili' : 'Qayerga o\'tishi kerak'}
+              </p>
             </div>
             <div className="md:col-span-2 flex gap-3">
               <button type="submit" className="btn-primary">{editing ? 'Saqlash' : 'Qo\'shish'}</button>
