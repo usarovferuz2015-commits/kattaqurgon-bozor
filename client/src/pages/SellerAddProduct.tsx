@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
-import { sellerService, categoryService } from '../services/endpoints';
+import { sellerService, categoryService, productService } from '../services/endpoints';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
@@ -79,7 +79,6 @@ export default function SellerAddProduct() {
 
     try {
       const productData = {
-        telegram_id: telegramId,
         name_uz: form.name_uz,
         description_uz: form.description_uz,
         price: parseFloat(form.price),
@@ -92,12 +91,7 @@ export default function SellerAddProduct() {
         images: form.images.length > 0 ? form.images.map((url, i) => ({ url, is_primary: i === 0 })) : undefined,
       };
 
-      const res = await fetch(`/api/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productData),
-      });
-      const json = await res.json();
+      const json = await productService.create(productData);
 
       if (json.success) {
         toast.success('Mahsulot qo\'shildi!');
@@ -140,15 +134,7 @@ export default function SellerAddProduct() {
     reader.onloadend = async () => {
       try {
         const base64data = reader.result as string;
-        const res = await fetch(`/api/upload`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${useAppStore.getState().token}`
-          },
-          body: JSON.stringify({ file: base64data }),
-        });
-        const json = await res.json();
+        const json = await productService.uploadImage(base64data);
         if (json.success && json.data?.url) {
           setForm((prev) => ({ ...prev, images: [...prev.images, json.data.url] }));
           toast.success('Rasm muvaffaqiyatli yuklandi!');

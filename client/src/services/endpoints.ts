@@ -21,6 +21,10 @@ export const productService = {
     const { data } = await api.post('/products', productData);
     return data;
   },
+  uploadImage: async (file: string) => {
+    const { data } = await api.post('/upload', { file });
+    return data;
+  },
   update: async (id: string, productData: any) => {
     const { data } = await api.put(`/products/${id}`, productData);
     return data;
