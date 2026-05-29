@@ -17,21 +17,26 @@ import SellerAddProduct from './pages/SellerAddProduct';
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
-  const { initTg, token, setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
+  const { initTg, setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
   const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
-    initTg();
-  }, [initTg]);
 
   useEffect(() => {
     async function doAuth() {
       try {
+        // initTg ni shu yerda chaqiring
+        initTg();
+
         const tg = (window as any)?.Telegram?.WebApp;
+
+        // WebApp tayyor bo'lishini kuting
+        if (tg) {
+          tg.ready();
+        }
+
         const initData = tg?.initData;
 
         if (!initData) {
-          console.warn('initData not available, trying dev fallback');
+          console.warn('initData not available, dev fallback');
           setAuthReady(true);
           return;
         }
