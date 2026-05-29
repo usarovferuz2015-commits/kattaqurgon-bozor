@@ -38,14 +38,18 @@ function App() {
         let res;
 
         if (initData) {
+          // Normal flow: signed initData from Telegram WebView
           res = await authService.init(initData);
         } else {
+          // Fallback: use telegramId from URL (added by bot)
           const urlParams = new URLSearchParams(window.location.search);
-          const urlToken = urlParams.get('token');
+          const userId = urlParams.get('user');
+          const storeId = useAppStore.getState().telegramId;
+          const telegramId = storeId || (userId ? parseInt(userId) : null);
 
-          if (urlToken) {
-            console.log('Falling back to initById with signed token');
-            res = await authService.initById(urlToken);
+          if (telegramId) {
+            console.log('Falling back to initById for telegramId:', telegramId);
+            res = await authService.initById(telegramId);
           } else {
             console.warn('No auth method available, allowing access');
             setAuthReady(true);

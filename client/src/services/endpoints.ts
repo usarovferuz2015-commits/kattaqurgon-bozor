@@ -81,8 +81,8 @@ export const authService = {
     const { data } = await api.post('/auth/init', { initData });
     return data;
   },
-  initById: async (token: string) => {
-    const { data } = await api.post('/auth/init-by-id', { token });
+  initById: async (telegramId: number) => {
+    const { data } = await api.post('/auth/init-by-id', { telegram_id: telegramId });
     return data;
   },
   getUser: async (telegramId: number) => {

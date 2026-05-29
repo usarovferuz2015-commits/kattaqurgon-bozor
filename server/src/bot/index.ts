@@ -8,7 +8,6 @@ import { sellerService } from '../services/seller.service';
 import { categoryService } from '../services/category.service';
 import { productService } from '../services/product.service';
 import { adminService } from '../services/admin.service';
-import { generateWebAppToken } from '../utils/auth.utils';
 
 interface SessionData {
   step: string;
@@ -43,13 +42,12 @@ export function createBot(): Bot<MyContext> {
         language_code: ctx.from!.language_code,
       });
  
-      const token = generateWebAppToken(telegramId);
       const keyboard = new InlineKeyboard()
         .row(
-          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}?token=${token}` } }
+          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}?user=${telegramId}` } }
         )
         .row(
-          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller?token=${token}` } }
+          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}` } }
         )
         .row(
           { text: '🏪 Do\'kon ochish', callback_data: 'seller_register' }
@@ -137,7 +135,7 @@ export function createBot(): Bot<MyContext> {
   bot.command('katalog', async (ctx) => {
     const telegramId = ctx.from!.id;
     const keyboard = new InlineKeyboard().row(
-      { text: '🛍 Katalogni ochish', web_app: { url: `${WEB_APP_URL}?token=${generateWebAppToken(telegramId)}` } }
+      { text: '🛍 Katalogni ochish', web_app: { url: `${WEB_APP_URL}?user=${telegramId}` } }
     );
     await ctx.reply('Mahsulotlar katalogini ochish uchun tugmani bosing:', { reply_markup: keyboard });
   });
@@ -145,7 +143,7 @@ export function createBot(): Bot<MyContext> {
   bot.command('sotuvchi', async (ctx) => {
     const telegramId = ctx.from!.id;
     const keyboard = new InlineKeyboard().row(
-      { text: '👨‍💼 Sotuvchi panelini ochish', web_app: { url: `${WEB_APP_URL}/seller?token=${generateWebAppToken(telegramId)}` } }
+      { text: '👨‍💼 Sotuvchi panelini ochish', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}` } }
     );
     await ctx.reply('Sotuvchi panelini ochish uchun tugmani bosing:', { reply_markup: keyboard });
   });
@@ -255,7 +253,7 @@ export function createBot(): Bot<MyContext> {
           `Holat: ${existingSeller.is_active ? '✅ Faol' : '❌ Bloklangan'}`,
           {
             reply_markup: new InlineKeyboard().row(
-              { text: '👨‍💼 Sotuvchi paneli', web_app: { url: `${WEB_APP_URL}/seller?token=${generateWebAppToken(telegramId)}&role=seller` } }
+              { text: '👨‍💼 Sotuvchi paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}&role=seller` } }
             )
           }
         );
@@ -283,7 +281,7 @@ export function createBot(): Bot<MyContext> {
       case 'dashboard':
         await ctx.reply('Sotuvchi panelini oching:', {
           reply_markup: new InlineKeyboard().row(
-            { text: '👨‍💼 Panelni ochish', web_app: { url: `${WEB_APP_URL}/seller?token=${generateWebAppToken(telegramId)}` } }
+            { text: '👨‍💼 Panelni ochish', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}` } }
           )
         });
         break;
