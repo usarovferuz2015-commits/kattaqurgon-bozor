@@ -4,7 +4,7 @@
 import { Router, Request, Response } from 'express';
 import { userService } from '../services/user.service';
 import { sellerService } from '../services/seller.service';
-import { verifyTelegramInitData, generateToken } from '../utils/auth.utils';
+import { verifyTelegramInitData, generateToken, verifyToken } from '../utils/auth.utils';
 import { authMiddleware } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { AuthSchema } from '../utils/validation';
@@ -58,17 +58,24 @@ router.post('/init', validate(AuthSchema.init), async (req: Request, res: Respon
   }
 });
 
-// POST /api/auth/init-by-id - Auth by telegramId (Desktop fallback)
+// POST /api/auth/init-by-id - Auth by signed token (Desktop fallback)
 router.post('/init-by-id', async (req: Request, res: Response) => {
   try {
-    const { telegram_id } = req.body;
-    if (!telegram_id) {
-      return res.status(400).json({ success: false, error: 'telegram_id required' });
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'token required' });
     }
+
+    const decoded = verifyToken(token);
+    if (!decoded || !decoded.telegramId) {
+      return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+    }
+
+    const telegram_id = decoded.telegramId;
 
     const user = await userService.findOrCreate(telegram_id, {});
     const seller = await sellerService.getByTelegramId(telegram_id);
-    const token = generateToken({
+    const authToken = generateToken({
       id: user.id,
       telegramId: telegram_id,
       role: user.role,
@@ -77,7 +84,7 @@ router.post('/init-by-id', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: {
-        token,
+        token: authToken,
         user,
         seller,
         is_seller: !!seller,

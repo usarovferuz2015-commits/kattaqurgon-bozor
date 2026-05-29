@@ -91,3 +91,13 @@ export function verifyToken(token: string): any {
     return null;
   }
 }
+
+/**
+ * Generates a short-lived JWT token for WebApp URL (Desktop fallback).
+ * Signed by the server so only we can create valid tokens.
+ */
+export function generateWebAppToken(telegramId: number): string {
+  return jwt.sign({ telegramId }, config.jwt.secret, {
+    expiresIn: '5m',
+  });
+}
