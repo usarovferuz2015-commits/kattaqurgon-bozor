@@ -23,6 +23,9 @@ import reviewRoutes from './api/reviews';
 
 const app = express();
 
+// Trust proxy headers (required for Railway behind nginx/F5)
+app.set('trust proxy', 1);
+
 // === Security Middleware ===
 app.use(helmet()); // Security headers
 
@@ -33,6 +36,7 @@ const limiter = rateLimit({
   message: { success: false, error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => req.ip, // Use req.ip (respects trust proxy) instead of X-Forwarded-For
 });
 app.use(limiter);
 
