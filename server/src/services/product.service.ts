@@ -1,7 +1,7 @@
 // ============================================
 // Product Service
 // ============================================
-import { getSupabaseClient } from './supabase';
+import { getAdminClient, getUserClient } from './supabase';
 import type { Product, ProductCreateInput, ProductUpdateInput, PaginatedResponse } from '../types';
 
 function generateSlug(name: string): string {

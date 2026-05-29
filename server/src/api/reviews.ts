@@ -3,7 +3,6 @@
 // ============================================
 import { Router, Request, Response } from 'express';
 import { reviewService } from '../services/review.service';
-import { userService } from '../services/user.service';
 import { validate } from '../middleware/validate';
 import { ReviewSchema } from '../utils/validation';
 
@@ -85,8 +84,8 @@ router.delete('/:reviewId', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'Izoh topilmadi' });
     }
 
-    const reviewUser = await userService.getByTelegramId(review.telegram_id);
-    if (reviewUser?.telegram_id !== telegramId && req.user?.role !== 'admin') {
+    // Check ownership: review.user_id must match req.user.id OR user is admin
+    if (review.user_id !== req.user?.id && req.user?.role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Forbidden: Faqat izoh egasi o\'chira oladi' });
     }
 

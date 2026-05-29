@@ -4,7 +4,6 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
-import qs from 'qs';
 
 /**
  * Verifies the Telegram Mini App initData string.
@@ -12,12 +11,21 @@ import qs from 'qs';
  */
 export function verifyTelegramInitData(initData: string): { isValid: boolean; user?: any } {
   try {
-    const params = qs.parse(initData);
-    const hash = params.hash as string;
-    
+    // Manually parse raw query string WITHOUT URL-decoding to preserve hash integrity
+    const params: Record<string, string> = {};
+    const pairs = initData.split('&');
+    for (const pair of pairs) {
+      const eqIdx = pair.indexOf('=');
+      if (eqIdx === -1) continue;
+      const key = pair.substring(0, eqIdx);
+      const value = pair.substring(eqIdx + 1);
+      params[key] = value;
+    }
+
+    const hash = params['hash'];
     if (!hash) return { isValid: false };
 
-    // 1. Collect all parameters except 'hash'
+    // Build data-check-string: keys sorted alphabetically, key=value pairs joined by \n
     const dataCheckArray: string[] = [];
     Object.keys(params)
       .filter(key => key !== 'hash')
@@ -26,15 +34,15 @@ export function verifyTelegramInitData(initData: string): { isValid: boolean; us
         dataCheckArray.push(`${key}=${params[key]}`);
       });
 
-    const dataCheckString = dataCheckArray.join('\\n');
+    const dataCheckString = dataCheckArray.join('\n');
 
-    // 2. Calculate HMAC-SHA256 of the BOT_TOKEN
+    // HMAC-SHA256 of the BOT_TOKEN with key 'WebAppData'
     const secretKey = crypto
-      .createHmac('sha256', config.bot.token)
-      .update('WebAppData')
+      .createHmac('sha256', 'WebAppData')
+      .update(config.bot.token)
       .digest();
 
-    // 3. Calculate HMAC-SHA256 of dataCheckString using the secretKey
+    // HMAC-SHA256 of dataCheckString using the derived secret key
     const calculatedHash = crypto
       .createHmac('sha256', secretKey)
       .update(dataCheckString)
@@ -44,19 +52,20 @@ export function verifyTelegramInitData(initData: string): { isValid: boolean; us
       return { isValid: false };
     }
 
-    // 4. Check for data expiration (auth_date)
-    const authDate = parseInt(params.auth_date as string);
+    // Check expiration (auth_date is in seconds)
+    const authDate = parseInt(params['auth_date']);
     const now = Math.floor(Date.now() / 1000);
-    
-    // Expire if data is older than 24 hours
     if (now - authDate > 86400) {
       return { isValid: false };
     }
 
-    return { 
-      isValid: true, 
-      user: params.user ? JSON.parse(params.user as string) : null 
-    };
+    // The user value is URL-encoded JSON, decode it
+    let user: any = null;
+    if (params['user']) {
+      user = JSON.parse(decodeURIComponent(params['user']));
+    }
+
+    return { isValid: true, user };
   } catch (error) {
     console.error('InitData verification error:', error);
     return { isValid: false };

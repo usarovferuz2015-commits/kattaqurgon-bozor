@@ -149,6 +149,18 @@ export class ReviewService {
       .eq('id', productId);
   }
 
+  async getById(reviewId: string): Promise<ProductReview | null> {
+    await ensureReviewTables();
+
+    const { data } = await this.db
+      .from('product_reviews')
+      .select('*')
+      .eq('id', reviewId)
+      .single();
+
+    return data;
+  }
+
   async getUserReview(productId: string, telegramId: number): Promise<ProductReview | null> {
     await ensureReviewTables();
 
