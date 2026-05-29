@@ -18,18 +18,13 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
   const { initTg, token, setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
-  const [authReady, setAuthReady] = useState(!!token);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     initTg();
   }, [initTg]);
 
   useEffect(() => {
-    if (token) {
-      setAuthReady(true);
-      return;
-    }
-
     async function doAuth() {
       try {
         const tg = (window as any)?.Telegram?.WebApp;
