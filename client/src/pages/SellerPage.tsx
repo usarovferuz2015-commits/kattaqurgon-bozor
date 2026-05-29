@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { sellerService, productService, categoryService } from '../services/endpoints';
 import StoreHeader from '../components/marketplace/StoreHeader';
 import StoreFilters from '../components/marketplace/StoreFilters';
@@ -41,10 +41,10 @@ export default function SellerPage() {
         search, 
         category
       );
-      return res;
+      return res as { data: any[]; has_next: boolean; total: number; page: number; limit: number; total_pages: number; has_prev: boolean };
     },
     enabled: !!storeData?.id,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   return (

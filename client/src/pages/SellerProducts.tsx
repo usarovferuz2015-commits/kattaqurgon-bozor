@@ -66,8 +66,9 @@ export default function SellerProducts() {
           [1, 2, 3].map((i) => (
             <div key={i} className="card p-4 animate-pulse"><div className="flex gap-3"><div className="w-16 h-16 skeleton rounded-xl" /><div className="flex-1 space-y-2"><div className="h-4 skeleton w-3/4" /><div className="h-3 skeleton w-1/3" /></div></div></div>
           ))
-        } : products.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="text-center py-12">
+
             <span className="text-4xl">📦</span>
             <p className="text-dark-500 mt-3">Hali mahsulot qo'shmagansiz</p>
             <a href={`${WEB_URL}/seller/add-product`} className="btn-primary mt-4 inline-block">Mahsulot qo'shish</a>
