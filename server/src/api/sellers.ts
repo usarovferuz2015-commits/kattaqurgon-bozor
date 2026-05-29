@@ -7,8 +7,7 @@ import { productService } from '../services/product.service';
 import { userService } from '../services/user.service';
 import { validate } from '../middleware/validate';
 import { SellerSchema } from '../utils/validation';
-
-const router = Router();
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -89,7 +88,6 @@ router.get('/:identifier', async (req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
 
 // PUT /api/sellers/:telegramId
 router.put('/:telegramId', validate(SellerSchema.update), async (req: Request, res: Response) => {
