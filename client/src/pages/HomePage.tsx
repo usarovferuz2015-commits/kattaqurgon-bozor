@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { productService, categoryService } from '../services/endpoints';
 import { useAppStore } from '../store/appStore';
-import { authService } from '../services/endpoints';
 import Header from '../components/ui/Header';
 import BannerCarousel from '../components/marketplace/BannerCarousel';
 import ProductCard from '../components/marketplace/ProductCard';
@@ -12,30 +11,7 @@ import { BannerSkeleton, ProductGridSkeleton } from '../components/ui/Skeleton';
 import { FiX, FiEye, FiCalendar, FiArrowRight } from 'react-icons/fi';
 
 export default function HomePage() {
-  const { telegramId, setUser, setSeller, setIsSeller, setIsAdmin } = useAppStore();
   const [selectedAd, setSelectedAd] = useState<any>(null);
-
-  useEffect(() => {
-    const tg = (window as any)?.Telegram?.WebApp;
-    const initData = tg?.initData;
-
-    if (initData) {
-      authService.init(initData).then((res) => {
-        if (res.success) {
-          setUser(res.data.user);
-          setSeller(res.data.seller);
-          setIsSeller(res.data.is_seller);
-          setIsAdmin(res.data.is_admin);
-          useAppStore.getState().setToken(res.data.token);
-        }
-      }).catch(console.error);
-    } else if (telegramId) {
-      // Dev mode fallback: try to init with just id if available (server will fail if initData is missing)
-      // But since we now REQUIRE initData, we can't really fallback unless we implement a dev-only bypass on server.
-      // For now, we just log.
-      console.warn('initData not found, cannot authenticate securely');
-    }
-  }, []);
 
   const { data: homepageData, isLoading: productsLoading } = useQuery({
     queryKey: ['homepage'],

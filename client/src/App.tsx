@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppStore } from './store/appStore';
+import { authService } from './services/endpoints';
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
 import CategoryPage from './pages/CategoryPage';
@@ -16,11 +17,32 @@ import SellerAddProduct from './pages/SellerAddProduct';
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
-  const { initTg } = useAppStore();
+  const { initTg, token, setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
 
   useEffect(() => {
     initTg();
   }, [initTg]);
+
+  useEffect(() => {
+    if (token) return; // Already have a token
+
+    const tg = (window as any)?.Telegram?.WebApp;
+    const initData = tg?.initData;
+
+    if (initData) {
+      authService.init(initData)
+        .then((res) => {
+          if (res.success) {
+            setUser(res.data.user);
+            setSeller(res.data.seller);
+            setIsSeller(res.data.is_seller);
+            setIsAdmin(res.data.is_admin);
+            setToken(res.data.token);
+          }
+        })
+        .catch(console.error);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
