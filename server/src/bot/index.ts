@@ -44,10 +44,10 @@ export function createBot(): Bot<MyContext> {
  
       const keyboard = new InlineKeyboard()
         .row(
-          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}` } }
+          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}?user=${telegramId}` } }
         )
         .row(
-          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller` } }
+          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}` } }
         )
         .row(
           { text: '🏪 Do\'kon ochish', callback_data: 'seller_register' }
