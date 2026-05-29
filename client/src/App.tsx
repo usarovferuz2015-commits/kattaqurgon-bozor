@@ -23,15 +23,10 @@ function App() {
   useEffect(() => {
     async function doAuth() {
       try {
-        // initTg ni shu yerda chaqiring
         initTg();
 
         const tg = (window as any)?.Telegram?.WebApp;
-
-        // WebApp tayyor bo'lishini kuting
-        if (tg) {
-          tg.ready();
-        }
+        if (tg) tg.ready();
 
         const initData = tg?.initData;
 
@@ -40,14 +35,29 @@ function App() {
         console.log('initData:', initData);
         console.log('token before auth:', useAppStore.getState().token);
 
-        if (!initData) {
-          console.warn('initData not available, dev fallback');
-          setAuthReady(true);
-          return;
+        let res;
+
+        if (initData) {
+          // Normal flow: signed initData from Telegram WebView
+          res = await authService.init(initData);
+        } else {
+          // Fallback: use telegramId from URL (added by bot)
+          const urlParams = new URLSearchParams(window.location.search);
+          const userId = urlParams.get('user');
+          const storeId = useAppStore.getState().telegramId;
+          const telegramId = storeId || (userId ? parseInt(userId) : null);
+
+          if (telegramId) {
+            console.log('Falling back to initById for telegramId:', telegramId);
+            res = await authService.initById(telegramId);
+          } else {
+            console.warn('No auth method available, allowing access');
+            setAuthReady(true);
+            return;
+          }
         }
 
-        const res = await authService.init(initData);
-        if (res.success && res.data?.token) {
+        if (res && res.success && res.data?.token) {
           setUser(res.data.user);
           setSeller(res.data.seller);
           setIsSeller(res.data.is_seller);

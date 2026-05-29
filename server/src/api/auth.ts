@@ -58,6 +58,37 @@ router.post('/init', validate(AuthSchema.init), async (req: Request, res: Respon
   }
 });
 
+// POST /api/auth/init-by-id - Auth by telegramId (Desktop fallback)
+router.post('/init-by-id', async (req: Request, res: Response) => {
+  try {
+    const { telegram_id } = req.body;
+    if (!telegram_id) {
+      return res.status(400).json({ success: false, error: 'telegram_id required' });
+    }
+
+    const user = await userService.findOrCreate(telegram_id, {});
+    const seller = await sellerService.getByTelegramId(telegram_id);
+    const token = generateToken({
+      id: user.id,
+      telegramId: telegram_id,
+      role: user.role,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        token,
+        user,
+        seller,
+        is_seller: !!seller,
+        is_admin: user.role === 'admin',
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // GET /api/users/:telegramId
 router.get('/:telegramId', authMiddleware, async (req: Request, res: Response) => {
   try {
