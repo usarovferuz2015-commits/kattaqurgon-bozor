@@ -4,17 +4,37 @@
 import { Router, Request, Response } from 'express';
 import { userService } from '../services/user.service';
 import { sellerService } from '../services/seller.service';
+import { verifyTelegramInitData, generateToken } from '../utils/auth.utils';
+import { authMiddleware } from '../middleware/auth';
+
+const router = Router();
+
+import { Router, Request, Response } from 'express';
+import { userService } from '../services/user.service';
+import { sellerService } from '../services/seller.service';
+import { verifyTelegramInitData, generateToken } from '../utils/auth.utils';
+import { authMiddleware } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { AuthSchema } from '../utils/validation';
 
 const router = Router();
 
 // POST /api/auth/init - Initialize user session from WebApp
-router.post('/init', async (req: Request, res: Response) => {
+router.post('/init', validate(AuthSchema.init), async (req: Request, res: Response) => {
   try {
-    const { telegram_id, username, first_name, last_name, language_code } = req.body;
+    const { initData } = req.body;
 
-    if (!telegram_id) {
-      return res.status(400).json({ success: false, error: 'telegram_id required' });
+    if (!initData) {
+      return res.status(400).json({ success: false, error: 'initData required' });
     }
+
+    const verification = verifyTelegramInitData(initData);
+
+    if (!verification.isValid || !verification.user) {
+      return res.status(401).json({ success: false, error: 'Invalid Telegram authentication data' });
+    }
+
+    const { id: telegram_id, username, first_name, last_name, language_code } = verification.user;
 
     const user = await userService.findOrCreate(telegram_id, {
       username,
@@ -25,9 +45,16 @@ router.post('/init', async (req: Request, res: Response) => {
 
     const seller = await sellerService.getByTelegramId(telegram_id);
 
+    const token = generateToken({
+      id: user.id,
+      telegramId: telegram_id,
+      role: user.role,
+    });
+
     res.json({
       success: true,
       data: {
+        token,
         user,
         seller,
         is_seller: !!seller,
@@ -39,11 +66,18 @@ router.post('/init', async (req: Request, res: Response) => {
   }
 });
 
+
 // GET /api/users/:telegramId
-router.get('/:telegramId', async (req: Request, res: Response) => {
+router.get('/:telegramId', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
-    const user = await userService.getByTelegramId(telegramId);
+    const targetTelegramId = parseInt(String((req.params as any).telegramId));
+    const currentUserId = req.user?.telegramId;
+
+    if (!currentUserId || (targetTelegramId !== currentUserId && req.user?.role !== 'admin')) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only view your own profile' });
+    }
+
+    const user = await userService.getByTelegramId(targetTelegramId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
@@ -54,10 +88,16 @@ router.get('/:telegramId', async (req: Request, res: Response) => {
 });
 
 // PUT /api/users/:telegramId
-router.put('/:telegramId', async (req: Request, res: Response) => {
+router.put('/:telegramId', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
-    const user = await userService.update(telegramId, req.body);
+    const targetTelegramId = parseInt(String((req.params as any).telegramId));
+    const currentUserId = req.user?.telegramId;
+
+    if (!currentUserId || (targetTelegramId !== currentUserId && req.user?.role !== 'admin')) {
+      return res.status(403).json({ success: false, error: 'Forbidden: You can only update your own profile' });
+    }
+
+    const user = await userService.update(targetTelegramId, req.body);
     res.json({ success: true, data: user });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

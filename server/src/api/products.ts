@@ -9,6 +9,11 @@ import { analyticsService } from '../services/analytics.service';
 import { userService } from '../services/user.service';
 import { adminService } from '../services/admin.service';
 import { notifyContactSeller } from '../bot';
+import { authMiddleware } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { ProductSchema } from '../utils/validation';
+
+const router = Router();
 
 const router = Router();
 
@@ -86,9 +91,15 @@ router.get('/:slug', async (req: Request, res: Response) => {
 });
 
 // POST /api/products - Create product (seller)
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authMiddleware, validate(ProductSchema.create), async (req: Request, res: Response) => {
   try {
-    const { telegram_id, ...productData } = req.body;
+    const { ...productData } = req.body;
+    const telegram_id = req.user?.telegramId;
+
+    if (!telegram_id) {
+      return res.status(401).json({ success: false, error: 'Auth required' });
+    }
+
     const seller = await sellerService.getByTelegramId(telegram_id);
     if (!seller) {
       return res.status(403).json({ success: false, error: 'Sotuvchi topilmadi' });
@@ -102,19 +113,47 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/products/:id - Update product
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', authMiddleware, validate(ProductSchema.update), async (req: Request, res: Response) => {
   try {
-    const product = await productService.update(String((req.params as any).id), req.body);
-    res.json({ success: true, data: product });
+    const productId = String((req.params as any).id);
+    const product = await productService.getById(productId);
+    
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Mahsulot topilmadi' });
+    }
+
+    const seller = await sellerService.getByTelegramId(req.user?.telegramId || 0);
+    if (!seller || seller.id !== product.seller_id) {
+       if (req.user?.role !== 'admin') {
+         return res.status(403).json({ success: false, error: 'Forbidden: Faqat mahsulot egasi tahrirlay oladi' });
+       }
+    }
+
+    const updatedProduct = await productService.update(productId, req.body);
+    res.json({ success: true, data: updatedProduct });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
 // DELETE /api/products/:id - Delete product
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
-    await productService.delete(String((req.params as any).id));
+    const productId = String((req.params as any).id);
+    const product = await productService.getById(productId);
+    
+    if (!product) {
+      return res.status(404).json({ success: false, error: 'Mahsulot topilmadi' });
+    }
+
+    const seller = await sellerService.getByTelegramId(req.user?.telegramId || 0);
+    if (!seller || seller.id !== product.seller_id) {
+       if (req.user?.role !== 'admin') {
+         return res.status(403).json({ success: false, error: 'Forbidden: Faqat mahsulot egasi o\'chira oladi' });
+       }
+    }
+
+    await productService.delete(productId);
     res.json({ success: true, message: 'Mahsulot o\'chirildi' });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -124,9 +163,13 @@ router.delete('/:id', async (req: Request, res: Response) => {
 // GET /api/products/seller/:sellerId - Seller's products
 router.get('/seller/:sellerId', async (req: Request, res: Response) => {
   try {
+    const sellerId = String((req.params as any).sellerId);
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    const result = await productService.getBySeller(String((req.params as any).sellerId), page, limit);
+    const search = req.query.search as string;
+    const categoryId = req.query.category_id as string;
+
+    const result = await productService.getBySeller(sellerId, page, limit, search, categoryId);
     res.json({ success: true, ...result });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

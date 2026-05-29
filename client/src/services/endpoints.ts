@@ -29,8 +29,10 @@ export const productService = {
     const { data } = await api.delete(`/products/${id}`);
     return data;
   },
-  getSellerProducts: async (sellerId: string, page = 1) => {
-    const { data } = await api.get(`/products/seller/${sellerId}`, { params: { page } });
+  getSellerProducts: async (sellerId: string, page = 1, search = '', categoryId = '') => {
+    const { data } = await api.get(`/products/seller/${sellerId}`, { 
+      params: { page, search, category_id: categoryId } 
+    });
     return data;
   },
   contactSeller: async (slug: string, telegramId: number) => {
@@ -71,8 +73,8 @@ export const categoryService = {
 };
 
 export const authService = {
-  init: async (telegramId: number, userData?: any) => {
-    const { data } = await api.post('/auth/init', { telegram_id: telegramId, ...userData });
+  init: async (initData: string) => {
+    const { data } = await api.post('/auth/init', { initData });
     return data;
   },
   getUser: async (telegramId: number) => {
@@ -115,6 +117,10 @@ export const sellerService = {
   },
   get: async (identifier: string | number) => {
     const { data } = await api.get(`/sellers/${identifier}`);
+    return data;
+  },
+  getMe: async () => {
+    const { data } = await api.get('/sellers/me');
     return data;
   },
   update: async (telegramId: number, sellerData: any) => {

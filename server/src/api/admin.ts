@@ -6,20 +6,12 @@ import { adminService } from '../services/admin.service';
 import { analyticsService } from '../services/analytics.service';
 import { userService } from '../services/user.service';
 import { sellerService } from '../services/seller.service';
-import { config, isAdmin } from '../config';
+import { authMiddleware, adminMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-// Middleware to check admin
-async function requireAdmin(req: Request, res: Response, next: Function) {
-  const telegramId = parseInt(req.headers['x-telegram-id'] as string);
-  if (!telegramId || !isAdmin(telegramId)) {
-    return res.status(403).json({ success: false, error: 'Unauthorized' });
-  }
-  next();
-}
-
-router.use(requireAdmin);
+router.use(authMiddleware);
+router.use(adminMiddleware);
 
 // GET /api/admin/dashboard
 router.get('/dashboard', async (_req: Request, res: Response) => {

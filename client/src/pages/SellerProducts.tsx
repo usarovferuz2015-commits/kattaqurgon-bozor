@@ -1,44 +1,44 @@
 import { useState, useEffect } from 'react';
-import { FiArrowLeft, FiTrash2, FiPlus } from 'react-icons/fi';
+import { FiArrowLeft, FiTrash2, FiPlus, FiEdit } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { useAppStore } from '../store/appStore';
+import { productService, sellerService } from '../services/endpoints';
+import ProductEditModal from '../components/seller/ProductEditModal';
 
 const WEB_URL = 'https://client-olive-six-20.vercel.app';
-const API_URL = '/api';
 
 export default function SellerProducts() {
-  const params = new URLSearchParams(window.location.search);
-  const urlTelegramId = params.get('user');
-  const telegramId = urlTelegramId ? parseInt(urlTelegramId) : null;
-
+  const { token } = useAppStore();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
 
-  useEffect(() => {
-    if (telegramId) {
-      fetch(`${API_URL}/auth/init`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegram_id: telegramId }),
-      })
-      .then(r => r.json())
-      .then(async (res) => {
-        if (res.success && res.data.seller) {
-          const prodRes = await fetch(`${API_URL}/products/seller/${res.data.seller.id}`);
-          const prodData = await prodRes.json();
-          setProducts(prodData.data || []);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-    } else {
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const sellerRes = await sellerService.getMe();
+      if (sellerRes.success && sellerRes.data) {
+        const prodRes = await productService.getSellerProducts(sellerRes.data.id);
+        setProducts(prodRes.data || []);
+      } else {
+        toast.error('Sotuvchi ma\'lumotlari topilmadi');
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      toast.error('Mahsulotlarni yuklashda xatolik');
+    } finally {
       setLoading(false);
     }
-  }, [telegramId]);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`"${name}" mahsulotini o'chirishni tasdiqlaysizmi?`)) return;
     try {
-      await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+      await productService.delete(id);
       toast.success('Mahsulot o\'chirildi');
       setProducts(prev => prev.filter(p => p.id !== id));
     } catch (error) {
@@ -47,7 +47,7 @@ export default function SellerProducts() {
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
-  const goBack = () => { window.location.href = `${WEB_URL}/seller?user=${telegramId}`; };
+  const goBack = () => { window.location.href = `${WEB_URL}/seller`; };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,7 +57,7 @@ export default function SellerProducts() {
             <button onClick={goBack} className="p-1 -ml-1"><FiArrowLeft className="w-5 h-5" /></button>
             <h1 className="font-bold">Mahsulotlarim</h1>
           </div>
-          <a href={`${WEB_URL}/seller/add-product?user=${telegramId}`} className="p-2 bg-primary-600 text-white rounded-xl"><FiPlus className="w-5 h-5" /></a>
+          <a href={`${WEB_URL}/seller/add-product`} className="p-2 bg-primary-600 text-white rounded-xl"><FiPlus className="w-5 h-5" /></a>
         </div>
       </div>
 
@@ -66,11 +66,11 @@ export default function SellerProducts() {
           [1, 2, 3].map((i) => (
             <div key={i} className="card p-4 animate-pulse"><div className="flex gap-3"><div className="w-16 h-16 skeleton rounded-xl" /><div className="flex-1 space-y-2"><div className="h-4 skeleton w-3/4" /><div className="h-3 skeleton w-1/3" /></div></div></div>
           ))
-        ) : products.length === 0 ? (
+        } : products.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-4xl">📦</span>
             <p className="text-dark-500 mt-3">Hali mahsulot qo'shmagansiz</p>
-            <a href={`${WEB_URL}/seller/add-product?user=${telegramId}`} className="btn-primary mt-4 inline-block">Mahsulot qo'shish</a>
+            <a href={`${WEB_URL}/seller/add-product`} className="btn-primary mt-4 inline-block">Mahsulot qo'shish</a>
           </div>
         ) : (
           products.map((product: any) => (
@@ -89,12 +89,21 @@ export default function SellerProducts() {
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <button onClick={() => handleDelete(product.id, product.name_uz)} className="p-2 hover:bg-red-50 rounded-lg text-dark-400 hover:text-red-500"><FiTrash2 className="w-4 h-4" /></button>
+                <button onClick={() => setEditingProduct(product)} className="p-2 hover:bg-primary-50 rounded-lg text-dark-400 hover:text-primary-600 transition-colors"><FiEdit className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(product.id, product.name_uz)} className="p-2 hover:bg-red-50 rounded-lg text-dark-400 hover:text-red-500 transition-colors"><FiTrash2 className="w-4 h-4" /></button>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {editingProduct && (
+        <ProductEditModal 
+          product={editingProduct} 
+          onClose={() => setEditingProduct(null)} 
+          onSuccess={fetchProducts} 
+        />
+      )}
     </div>
   );
 }

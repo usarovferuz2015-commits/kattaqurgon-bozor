@@ -8,9 +8,13 @@ import { userService } from '../services/user.service';
 const router = Router();
 
 // GET /api/cart/:telegramId
-router.get('/:telegramId', async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
+    const telegramId = req.user?.telegramId;
+    if (!telegramId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
+
     const user = await userService.getByTelegramId(telegramId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -24,10 +28,14 @@ router.get('/:telegramId', async (req: Request, res: Response) => {
 });
 
 // POST /api/cart/:telegramId/add
-router.post('/:telegramId/add', async (req: Request, res: Response) => {
+router.post('/add', async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
+    const telegramId = req.user?.telegramId;
     const { product_id, quantity, variant_id } = req.body;
+
+    if (!telegramId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
 
     const user = await userService.getByTelegramId(telegramId);
     if (!user) {
@@ -42,9 +50,13 @@ router.post('/:telegramId/add', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/cart/:telegramId/item/:itemId
-router.delete('/:telegramId/item/:itemId', async (req: Request, res: Response) => {
+router.delete('/item/:itemId', async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
+    const telegramId = req.user?.telegramId;
+    if (!telegramId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
+
     const user = await userService.getByTelegramId(telegramId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -58,10 +70,14 @@ router.delete('/:telegramId/item/:itemId', async (req: Request, res: Response) =
 });
 
 // PUT /api/cart/:telegramId/item/:itemId
-router.put('/:telegramId/item/:itemId', async (req: Request, res: Response) => {
+router.put('/item/:itemId', async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
+    const telegramId = req.user?.telegramId;
     const { quantity } = req.body;
+
+    if (!telegramId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
 
     const user = await userService.getByTelegramId(telegramId);
     if (!user) {
@@ -76,9 +92,13 @@ router.put('/:telegramId/item/:itemId', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/cart/:telegramId/clear
-router.delete('/:telegramId/clear', async (req: Request, res: Response) => {
+router.delete('/clear', async (req: Request, res: Response) => {
   try {
-    const telegramId = parseInt(String((req.params as any).telegramId));
+    const telegramId = req.user?.telegramId;
+    if (!telegramId) {
+      return res.status(401).json({ success: false, error: 'User not authenticated' });
+    }
+
     const user = await userService.getByTelegramId(telegramId);
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });

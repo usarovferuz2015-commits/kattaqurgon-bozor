@@ -20,6 +20,7 @@ interface AppState {
   isSeller: boolean;
   isAdmin: boolean;
   isTgReady: boolean;
+  token: string | null;
 
   // Cart (local + sync)
   cart: CartItem[];
@@ -36,6 +37,7 @@ interface AppState {
   setSeller: (seller: any) => void;
   setIsSeller: (val: boolean) => void;
   setIsAdmin: (val: boolean) => void;
+  setToken: (token: string | null) => void;
 
   // Cart actions
   addToCart: (item: CartItem) => void;
@@ -58,6 +60,7 @@ export const useAppStore = create<AppState>()(
       isSeller: false,
       isAdmin: false,
       isTgReady: false,
+      token: null,
       cart: [],
       cartCount: 0,
       cartTotal: 0,
@@ -103,6 +106,7 @@ export const useAppStore = create<AppState>()(
       setSeller: (seller) => set({ seller }),
       setIsSeller: (isSeller) => set({ isSeller }),
       setIsAdmin: (isAdmin) => set({ isAdmin }),
+      setToken: (token) => set({ token }),
 
       addToCart: (item) => {
         const state = get();
@@ -180,15 +184,17 @@ export const useAppStore = create<AppState>()(
           cartTotal: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
         }),
     }),
-    {
-      name: 'kattaqurgon-cart',
-      partialize: (state) => ({
-        cart: state.cart,
-        cartCount: state.cartCount,
-        cartTotal: state.cartTotal,
-        favoriteIds: state.favoriteIds,
-        favoriteProducts: state.favoriteProducts,
-      }),
-    }
+      {
+        name: 'kattaqurgon-cart',
+        partialize: (state) => ({
+          token: state.token,
+          cart: state.cart,
+          cartCount: state.cartCount,
+          cartTotal: state.cartTotal,
+          favoriteIds: state.favoriteIds,
+          favoriteProducts: state.favoriteProducts,
+        }),
+      }
+
   )
 );

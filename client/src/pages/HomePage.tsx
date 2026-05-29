@@ -16,17 +16,26 @@ export default function HomePage() {
   const [selectedAd, setSelectedAd] = useState<any>(null);
 
   useEffect(() => {
-    if (telegramId) {
-      authService.init(telegramId).then((res) => {
+    const tg = (window as any)?.Telegram?.WebApp;
+    const initData = tg?.initData;
+
+    if (initData) {
+      authService.init(initData).then((res) => {
         if (res.success) {
           setUser(res.data.user);
           setSeller(res.data.seller);
           setIsSeller(res.data.is_seller);
           setIsAdmin(res.data.is_admin);
+          useAppStore.getState().setToken(res.data.token);
         }
       }).catch(console.error);
+    } else if (telegramId) {
+      // Dev mode fallback: try to init with just id if available (server will fail if initData is missing)
+      // But since we now REQUIRE initData, we can't really fallback unless we implement a dev-only bypass on server.
+      // For now, we just log.
+      console.warn('initData not found, cannot authenticate securely');
     }
-  }, [telegramId]);
+  }, []);
 
   const { data: homepageData, isLoading: productsLoading } = useQuery({
     queryKey: ['homepage'],

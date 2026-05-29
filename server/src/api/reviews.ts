@@ -3,6 +3,10 @@
 // ============================================
 import { Router, Request, Response } from 'express';
 import { reviewService } from '../services/review.service';
+import { validate } from '../middleware/validate';
+import { ReviewSchema } from '../utils/validation';
+
+const router = Router();
 
 const router = Router();
 
@@ -18,15 +22,38 @@ router.get('/:productId', async (req: Request, res: Response) => {
 });
 
 // POST /api/reviews - Create or update a review
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', validate(ReviewSchema.create), async (req: Request, res: Response) => {
   try {
-    const { telegram_id, product_id, rating, comment } = req.body;
+    const telegram_id = req.user?.telegramId;
+    const { product_id, rating, comment } = req.body;
 
     if (!telegram_id || !product_id || !rating) {
       return res.status(400).json({
         success: false,
-        error: 'telegram_id, product_id va rating majburiy',
+        error: 'product_id va rating majburiy',
       });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        error: 'Reyting 1 dan 5 gacha bo\'lishi kerak',
+      });
+    }
+
+    const review = await reviewService.create({
+      telegram_id,
+      product_id,
+      rating,
+      comment,
+    });
+
+    res.json({ success: true, data: review });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
     }
 
     if (rating < 1 || rating > 5) {
@@ -53,7 +80,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.get('/:productId/my', async (req: Request, res: Response) => {
   try {
     const productId = (req.params as any).productId;
-    const telegramId = parseInt(req.query.telegram_id as string);
+    const telegramId = req.user?.telegramId;
 
     if (!telegramId) {
       return res.json({ success: true, data: null });
@@ -70,10 +97,21 @@ router.get('/:productId/my', async (req: Request, res: Response) => {
 router.delete('/:reviewId', async (req: Request, res: Response) => {
   try {
     const reviewId = (req.params as any).reviewId;
-    const telegramId = parseInt(req.body.telegram_id);
+    const telegramId = req.user?.telegramId;
 
     if (!telegramId) {
-      return res.status(400).json({ success: false, error: 'telegram_id majburiy' });
+      return res.status(400).json({ success: false, error: 'Auth required' });
+    }
+
+    const review = await reviewService.getById(reviewId);
+    if (!review) {
+      return res.status(404).json({ success: false, error: 'Izoh topilmadi' });
+    }
+
+    // Check if review belongs to the user OR user is admin
+    const reviewUser = await userService.getByTelegramId(review.telegram_id);
+    if (reviewUser?.telegram_id !== telegramId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Faqat izoh egasi o\'chira oladi' });
     }
 
     await reviewService.delete(reviewId, telegramId);
