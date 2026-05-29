@@ -323,7 +323,7 @@ export function createBot(): Bot<MyContext> {
         });
 
         const keyboard = new InlineKeyboard().row(
-          { text: '👨‍💼 Sotuvchi paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}` } }
+          { text: '👨‍💼 Sotuvchi paneli', web_app: { url: `${WEB_APP_URL}/seller` } }
         );
 
         await ctx.reply(
