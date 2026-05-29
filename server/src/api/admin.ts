@@ -231,4 +231,22 @@ router.get('/admins', async (_req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/admin/sellers/by-name/:storeName - Delete seller by store name
+router.delete('/sellers/by-name/:storeName', async (req: Request, res: Response) => {
+  try {
+    const storeName = decodeURIComponent(String((req.params as any).storeName));
+    const sellers = await sellerService.getAll(1, 100);
+    const seller = sellers.data.find((s: any) => s.store_name === storeName);
+
+    if (!seller) {
+      return res.status(404).json({ success: false, error: `"${storeName}" nomli do'kon topilmadi` });
+    }
+
+    await sellerService.delete(seller.id);
+    res.json({ success: true, message: `"${storeName}" do'koni va uning barcha mahsulotlari o'chirildi` });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
