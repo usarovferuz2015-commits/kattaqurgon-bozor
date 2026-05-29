@@ -32,74 +32,88 @@ export function createBot(): Bot<MyContext> {
 
   // === /start command ===
   bot.command('start', async (ctx) => {
-    const telegramId = ctx.from!.id;
-    const user = await userService.findOrCreate(telegramId, {
-      username: ctx.from!.username || undefined,
-      first_name: ctx.from!.first_name,
-      last_name: ctx.from!.last_name,
-      language_code: ctx.from!.language_code,
-    });
-
-    const keyboard = new InlineKeyboard()
-      .row(
-        { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}?user=${telegramId}` } }
-      )
-      .row(
-        { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}&role=${user.role}` } }
-      )
-      .row(
-        { text: '🏪 Do\'kon ochish', callback_data: 'seller_register' }
+    console.log(`[Bot] /start received from ${ctx.from?.id}`);
+    try {
+      const telegramId = ctx.from!.id;
+      const user = await userService.findOrCreate(telegramId, {
+        username: ctx.from!.username || undefined,
+        first_name: ctx.from!.first_name,
+        last_name: ctx.from!.last_name,
+        language_code: ctx.from!.language_code,
+      });
+ 
+      const keyboard = new InlineKeyboard()
+        .row(
+          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}` } }
+        )
+        .row(
+          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller` } }
+        )
+        .row(
+          { text: '🏪 Do\'kon ochish', callback_data: 'seller_register' }
+        );
+ 
+      await ctx.reply(
+        `Assalomu alaykum, ${user.first_name || 'xaridor'}! 👋\n\n` +
+        `Kattaqo'rgon bozorining rasmiy online platformasiga xush kelibsiz!\n\n` +
+        `Bu yerda siz:\n` +
+        `✅ Bozordagi barcha mahsulotlarni ko'rishingiz\n` +
+        `✅ Arzon narxlardagi tovarlarni topishingiz\n` +
+        `✅ Sotuvchilar bilan bevosita bog'lanishingiz\n` +
+        `✅ Sevimli mahsulotlarni saqlashingiz mumkin\n\n` +
+        `🛍 Quyidagi bo'limlardan birini tanlang:`,
+        { reply_markup: keyboard }
       );
-
-    await ctx.reply(
-      `Assalomu alaykum, ${user.first_name || 'xaridor'}! 👋\n\n` +
-      `Kattaqo'rg'on bozorining rasmiy online platformasiga xush kelibsiz!\n\n` +
-      `Bu yerda siz:\n` +
-      `✅ Bozordagi barcha mahsulotlarni ko'rishingiz\n` +
-      `✅ Arzon narxlardagi tovarlarni topishingiz\n` +
-      `✅ Sotuvchilar bilan bevosita bog'lanishingiz\n` +
-      `✅ Sevimli mahsulotlarni saqlashingiz mumkin\n\n` +
-      `🛍 Quyidagi bo'limlardan birini tanlang:`,
-      { reply_markup: keyboard }
-    );
+    } catch (error) {
+      console.error('[Bot] /start error:', error);
+      await ctx.reply('❌ Kechirasiz, xatolik yuz berdi. Iltimos keyinroq urinib ko\'ring.');
+    }
   });
+
 
   // === /admin command ===
   bot.command('admin', async (ctx) => {
-    const telegramId = ctx.from!.id;
-
-    if (!isAdmin(telegramId)) {
-      await ctx.reply('⛔ Siz admin emassiz. Bu buyruq faqat adminlar uchun.');
-      return;
-    }
-
-    const keyboard = new InlineKeyboard()
-      .row(
-        { text: '📊 Admin Panel', web_app: { url: `${ADMIN_WEB_APP_URL}?admin=${telegramId}` } }
-      )
-      .row(
-        { text: '📂 Kategoriyalar', callback_data: 'admin_categories' },
-        { text: '🏪 Sotuvchilar', callback_data: 'admin_sellers' }
-      )
-      .row(
-        { text: '📢 Premium Reklama', callback_data: 'admin_ads' },
-        { text: '🖼 Bannerlar', callback_data: 'admin_banners' }
-      )
-      .row(
-        { text: '📈 Statistika', callback_data: 'admin_stats' }
+    console.log(`[Bot] /admin received from ${ctx.from?.id}`);
+    try {
+      const telegramId = ctx.from!.id;
+ 
+      if (!isAdmin(telegramId)) {
+        await ctx.reply('⛔ Siz admin emassiz. Bu buyruq faqat adminlar uchun.');
+        return;
+      }
+ 
+      const keyboard = new InlineKeyboard()
+        .row(
+          { text: '📊 Admin Panel', web_app: { url: `${ADMIN_WEB_APP_URL}` } }
+        )
+        .row(
+          { text: '📂 Kategoriyalar', callback_data: 'admin_categories' },
+          { text: '🏪 Sotuvchilar', callback_data: 'admin_sellers' }
+        )
+        .row(
+          { text: '📢 Premium Reklama', callback_data: 'admin_ads' },
+          { text: '🖼 Bannerlar', callback_data: 'admin_banners' }
+        )
+        .row(
+          { text: '📈 Statistika', callback_data: 'admin_stats' }
+        );
+ 
+      await ctx.reply(
+        `👑 Admin Panelga xush kelibsiz!\n\n` +
+        `Siz quyidagilarni boshqarishingiz mumkin:\n` +
+        `• Kategoriyalar (qo'shish, tahrirlash, o'chirish)\n` +
+        `• Sotuvchilar (tasdiqlash, boshqarish)\n` +
+        `• Reklamalar (premium reklamalarni boshqarish)\n` +
+        `• Bannerlar (slider rasmlari)\n` +
+        `• Statistika (marketplace analitikasi)`,
+        { reply_markup: keyboard, parse_mode: 'HTML' }
       );
-
-    await ctx.reply(
-      `👑 Admin Panelga xush kelibsiz!\n\n` +
-      `Siz quyidagilarni boshqarishingiz mumkin:\n` +
-      `• Kategoriyalar (qo'shish, tahrirlash, o'chirish)\n` +
-      `• Sotuvchilar (tasdiqlash, boshqarish)\n` +
-      `• Reklamalar (premium reklamalarni boshqarish)\n` +
-      `• Bannerlar (slider rasmlari)\n` +
-      `• Statistika (marketplace analitikasi)`,
-      { reply_markup: keyboard, parse_mode: 'HTML' }
-    );
+    } catch (error) {
+      console.error('[Bot] /admin error:', error);
+      await ctx.reply('❌ Kechirasiz, xatolik yuz berdi.');
+    }
   });
+
 
   // === /help command ===
   bot.command('help', async (ctx) => {
