@@ -6,14 +6,6 @@ import { userService } from '../services/user.service';
 import { sellerService } from '../services/seller.service';
 import { verifyTelegramInitData, generateToken } from '../utils/auth.utils';
 import { authMiddleware } from '../middleware/auth';
-
-const router = Router();
-
-import { Router, Request, Response } from 'express';
-import { userService } from '../services/user.service';
-import { sellerService } from '../services/seller.service';
-import { verifyTelegramInitData, generateToken } from '../utils/auth.utils';
-import { authMiddleware } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { AuthSchema } from '../utils/validation';
 
@@ -65,7 +57,6 @@ router.post('/init', validate(AuthSchema.init), async (req: Request, res: Respon
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
 
 // GET /api/users/:telegramId
 router.get('/:telegramId', authMiddleware, async (req: Request, res: Response) => {
