@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppStore } from './store/appStore';
 import { authService } from './services/endpoints';
 import HomePage from './pages/HomePage';
@@ -18,31 +18,57 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
   const { initTg, token, setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
+  const [authReady, setAuthReady] = useState(!!token);
 
   useEffect(() => {
     initTg();
   }, [initTg]);
 
   useEffect(() => {
-    if (token) return; // Already have a token
-
-    const tg = (window as any)?.Telegram?.WebApp;
-    const initData = tg?.initData;
-
-    if (initData) {
-      authService.init(initData)
-        .then((res) => {
-          if (res.success) {
-            setUser(res.data.user);
-            setSeller(res.data.seller);
-            setIsSeller(res.data.is_seller);
-            setIsAdmin(res.data.is_admin);
-            setToken(res.data.token);
-          }
-        })
-        .catch(console.error);
+    if (token) {
+      setAuthReady(true);
+      return;
     }
+
+    async function doAuth() {
+      try {
+        const tg = (window as any)?.Telegram?.WebApp;
+        const initData = tg?.initData;
+
+        if (!initData) {
+          console.warn('initData not available, trying dev fallback');
+          setAuthReady(true);
+          return;
+        }
+
+        const res = await authService.init(initData);
+        if (res.success && res.data?.token) {
+          setUser(res.data.user);
+          setSeller(res.data.seller);
+          setIsSeller(res.data.is_seller);
+          setIsAdmin(res.data.is_admin);
+          setToken(res.data.token);
+        }
+      } catch (err) {
+        console.error('Auth init failed:', err);
+      } finally {
+        setAuthReady(true);
+      }
+    }
+
+    doAuth();
   }, []);
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-dark-500 text-sm">Yuklanmoqda...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
