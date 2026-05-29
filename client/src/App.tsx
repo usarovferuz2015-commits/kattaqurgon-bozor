@@ -35,6 +35,11 @@ function App() {
 
         const initData = tg?.initData;
 
+        console.log('=== AUTH DEBUG ===');
+        console.log('tg:', !!tg);
+        console.log('initData:', initData);
+        console.log('token before auth:', useAppStore.getState().token);
+
         if (!initData) {
           console.warn('initData not available, dev fallback');
           setAuthReady(true);
