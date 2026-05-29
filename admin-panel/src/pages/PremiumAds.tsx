@@ -21,14 +21,14 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-ads'],
     queryFn: async () => {
-      const { data } = await api.get('/admin/ads', { headers: { 'X-Telegram-Id': adminId } });
+      const { data } = await api.get('/admin/ads');
       return data.data;
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (formData: any) => {
-      const { data } = await api.post('/admin/ads', formData, { headers: { 'X-Telegram-Id': adminId } });
+      const { data } = await api.post('/admin/ads', formData);
       return data;
     },
     onSuccess: () => {
@@ -41,7 +41,7 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...formData }: any) => {
-      const { data } = await api.put(`/admin/ads/${id}`, formData, { headers: { 'X-Telegram-Id': adminId } });
+      const { data } = await api.put(`/admin/ads/${id}`, formData);
       return data;
     },
     onSuccess: () => {
@@ -54,7 +54,7 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await api.delete(`/admin/ads/${id}`, { headers: { 'X-Telegram-Id': adminId } });
+      await api.delete(`/admin/ads/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-ads'] });
@@ -92,19 +92,20 @@ export default function PremiumAds({ adminId }: PremiumAdsProps) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onloadend = async () => {
-      try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ file: reader.result }),
-        });
-        const json = await res.json();
-        if (json.success && json.data?.url) {
-          setForm({ ...form, image_url: json.data.url });
-          toast.success('Rasm yuklandi!');
-        } else { toast.error(json.error || 'Xatolik'); }
-      } catch { toast.error('Serverga ulanishda xatolik'); }
-      finally { setUploadingImage(false); }
+        try {
+          const { data } = await api.post('/upload', { file: reader.result });
+          if (data.success && data.data?.url) {
+            setForm({ ...form, image_url: data.data.url });
+            toast.success('Rasm yuklandi!');
+          } else {
+            toast.error(data.error || 'Xatolik');
+          }
+        } catch (err: any) {
+          toast.error(err.response?.data?.error || 'Serverga ulanishda xatolik');
+        } finally {
+          setUploadingImage(false);
+        }
+
     };
   };
 
