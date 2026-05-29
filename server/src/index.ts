@@ -6,7 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
-import { startBot } from './bot';
+import { startBotAndSetupWebhook } from './bot';
 import { analyticsService } from './services/analytics.service';
 import { globalErrorHandler } from './middleware/error';
 import { authMiddleware } from './middleware/auth';
@@ -36,7 +36,7 @@ const limiter = rateLimit({
   message: { success: false, error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.ip, // Use req.ip (respects trust proxy) instead of X-Forwarded-For
+  keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown', // Use req.ip (respects trust proxy) instead of X-Forwarded-For
 });
 app.use(limiter);
 
@@ -114,7 +114,7 @@ function startServer() {
 
 // === Initialize ===
 try {
-  startBot();
+  startBotAndSetupWebhook(app);
   startServer();
 } catch (error) {
   console.error('Failed to start application:', error);

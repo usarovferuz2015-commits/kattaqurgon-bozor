@@ -1,7 +1,7 @@
 // ============================================
 // Telegram Bot - Main Entry
 // ============================================
-import { Bot, session, InlineKeyboard, type SessionFlavor, type Context } from 'grammy';
+import { Bot, session, InlineKeyboard, webhookCallback, type SessionFlavor, type Context } from 'grammy';
 import { config, isAdmin } from '../config';
 import { userService } from '../services/user.service';
 import { sellerService } from '../services/seller.service';
@@ -456,6 +456,39 @@ export async function notifyContactSeller(
 export function startBot() {
   const bot = createBot();
   botInstance = bot;
-  bot.start({ onStart: () => console.log('🤖 Bot started successfully') });
+  // Use webhook in production, polling in development
+  if (config.app.nodeEnv === 'production' && config.app.botWebhookUrl) {
+    console.log('🔗 Bot webhook mode');
+  } else {
+    bot.start({ onStart: () => console.log('🤖 Bot started (polling)') });
+  }
   return bot;
+}
+
+export function getBotWebhook() {
+  const bot = getBot();
+  return webhookCallback(bot, 'express');
+}
+
+export async function setBotWebhook() {
+  const bot = getBot();
+  const webhookUrl = config.app.botWebhookUrl;
+  if (webhookUrl) {
+    await bot.api.setWebhook(webhookUrl);
+    console.log(`🔗 Webhook set to: ${webhookUrl}`);
+  }
+}
+
+export function startBotAndSetupWebhook(app: import('express').Application) {
+  startBot();
+  
+  // Register webhook route
+  app.post('/bot-webhook', getBotWebhook());
+  
+  // Set webhook URL on Railway
+  if (config.app.nodeEnv === 'production') {
+    setBotWebhook().catch(err => {
+      console.error('Failed to set webhook:', err);
+    });
+  }
 }

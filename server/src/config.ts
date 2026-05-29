@@ -18,6 +18,7 @@ export const config = {
     nodeEnv: process.env.NODE_ENV || 'development',
     webAppUrl: process.env.WEB_APP_URL || 'https://kattaqurgon-bozori.vercel.app',
     adminWebAppUrl: process.env.ADMIN_WEB_APP_URL || 'https://kattaqurgon-bozori-admin.vercel.app',
+    botWebhookUrl: process.env.BOT_WEBHOOK_URL || '',
   },
   admin: {
     telegramIds: (process.env.ADMIN_TELEGRAM_IDS || '')
