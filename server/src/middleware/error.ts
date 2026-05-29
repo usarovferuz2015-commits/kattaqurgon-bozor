@@ -36,6 +36,14 @@ export function globalErrorHandler(err: any, req: Request, res: Response, next: 
     });
   }
 
+  // Handle payload too large (request entity too large)
+  if (err.type === 'entity.too.large' || err.statusCode === 413) {
+    return res.status(413).json({
+      success: false,
+      error: 'Fayl hajmi juda katta. Maksimal 10MB ruxsat etilgan.',
+    });
+  }
+
   // Generic server error
   console.error('[Server Error]:', err);
   
