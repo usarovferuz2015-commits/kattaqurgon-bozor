@@ -142,7 +142,10 @@ export default function SellerAddProduct() {
         const base64data = reader.result as string;
         const res = await fetch(`/api/upload`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${useAppStore.getState().token}`
+          },
           body: JSON.stringify({ file: base64data }),
         });
         const json = await res.json();
