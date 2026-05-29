@@ -15,8 +15,6 @@ import { ProductSchema } from '../utils/validation';
 
 const router = Router();
 
-const router = Router();
-
 // GET /api/products - Get all products (paginated)
 router.get('/', async (req: Request, res: Response) => {
   try {
