@@ -453,42 +453,25 @@ export async function notifyContactSeller(
   }
 }
 
-export function startBot() {
+export function startBot(app?: import('express').Application) {
   const bot = createBot();
   botInstance = bot;
-  // Use webhook in production, polling in development
-  if (config.app.nodeEnv === 'production' && config.app.botWebhookUrl) {
-    console.log('🔗 Bot webhook mode');
+
+  if (config.app.nodeEnv === 'production') {
+    // Webhook mode (Railway)
+    if (app) {
+      app.post('/bot-webhook', webhookCallback(bot, 'express'));
+    }
+    if (config.app.botWebhookUrl) {
+      bot.api.setWebhook(config.app.botWebhookUrl)
+        .then(() => console.log(`🔗 Bot webhook set to: ${config.app.botWebhookUrl}`))
+        .catch(err => console.error('Failed to set webhook:', err));
+    }
+    console.log('🤖 Bot started (webhook mode)');
   } else {
+    // Polling mode (local development)
     bot.start({ onStart: () => console.log('🤖 Bot started (polling)') });
   }
+
   return bot;
-}
-
-export function getBotWebhook() {
-  const bot = getBot();
-  return webhookCallback(bot, 'express');
-}
-
-export async function setBotWebhook() {
-  const bot = getBot();
-  const webhookUrl = config.app.botWebhookUrl;
-  if (webhookUrl) {
-    await bot.api.setWebhook(webhookUrl);
-    console.log(`🔗 Webhook set to: ${webhookUrl}`);
-  }
-}
-
-export function startBotAndSetupWebhook(app: import('express').Application) {
-  startBot();
-  
-  // Register webhook route
-  app.post('/bot-webhook', getBotWebhook());
-  
-  // Set webhook URL on Railway
-  if (config.app.nodeEnv === 'production') {
-    setBotWebhook().catch(err => {
-      console.error('Failed to set webhook:', err);
-    });
-  }
 }
