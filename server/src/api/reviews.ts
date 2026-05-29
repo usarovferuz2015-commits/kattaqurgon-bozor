@@ -3,10 +3,9 @@
 // ============================================
 import { Router, Request, Response } from 'express';
 import { reviewService } from '../services/review.service';
+import { userService } from '../services/user.service';
 import { validate } from '../middleware/validate';
 import { ReviewSchema } from '../utils/validation';
-
-const router = Router();
 
 const router = Router();
 
@@ -32,28 +31,6 @@ router.post('/', validate(ReviewSchema.create), async (req: Request, res: Respon
         success: false,
         error: 'product_id va rating majburiy',
       });
-    }
-
-    if (rating < 1 || rating > 5) {
-      return res.status(400).json({
-        success: false,
-        error: 'Reyting 1 dan 5 gacha bo\'lishi kerak',
-      });
-    }
-
-    const review = await reviewService.create({
-      telegram_id,
-      product_id,
-      rating,
-      comment,
-    });
-
-    res.json({ success: true, data: review });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
     }
 
     if (rating < 1 || rating > 5) {
@@ -108,7 +85,6 @@ router.delete('/:reviewId', async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'Izoh topilmadi' });
     }
 
-    // Check if review belongs to the user OR user is admin
     const reviewUser = await userService.getByTelegramId(review.telegram_id);
     if (reviewUser?.telegram_id !== telegramId && req.user?.role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Forbidden: Faqat izoh egasi o\'chira oladi' });
