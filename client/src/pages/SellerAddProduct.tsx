@@ -5,11 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
 
-const WEB_URL = 'https://client-olive-six-20.vercel.app';
-
 export default function SellerAddProduct() {
   const { telegramId: storeTelegramId } = useAppStore();
-  const tg = (window as any)?.Telegram?.WebApp;
 
   const params = new URLSearchParams(window.location.search);
   const urlTelegramId = params.get('user');
@@ -40,12 +37,7 @@ export default function SellerAddProduct() {
   });
 
   const goBack = () => {
-    const url = `${WEB_URL}/seller?user=${telegramId}&role=seller`;
-    if (tg?.openLink) {
-      tg.openLink(url);
-    } else {
-      window.location.href = url;
-    }
+    window.history.back();
   };
 
   if (!telegramId) {
