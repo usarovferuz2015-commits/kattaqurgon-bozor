@@ -110,7 +110,7 @@ export class ProductService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
  
-    let query = this.userDb
+    let query = this.adminDb
       .from('products')
       .select(`
         *,
@@ -118,7 +118,6 @@ export class ProductService {
         seller:sellers(id, store_name, store_slug, store_logo, is_verified, telegram_id, user:users(username))
       `, { count: 'exact' })
       .eq('seller_id', sellerId)
-      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     if (search) {
