@@ -72,12 +72,12 @@ export class ProductService {
   }
  
   async getById(id: string, includeRelations = true): Promise<Product | null> {
-    let query = this.userDb
+    let query = this.adminDb
       .from('products')
       .select('*');
  
     if (includeRelations) {
-      query = this.userDb
+      query = this.adminDb
         .from('products')
         .select(`
           *,
@@ -92,7 +92,7 @@ export class ProductService {
   }
  
   async getBySlug(slug: string): Promise<Product | null> {
-    const { data } = await this.userDb
+    const { data } = await this.adminDb
       .from('products')
       .select(`
         *,
@@ -145,7 +145,7 @@ export class ProductService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
  
-    const { data, count } = await this.userDb
+    const { data, count } = await this.adminDb
       .from('products')
       .select(`
         *,
@@ -173,7 +173,7 @@ export class ProductService {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
  
-    const { data, count } = await this.userDb
+    const { data, count } = await this.adminDb
       .from('products')
       .select(`
         *,
@@ -204,7 +204,7 @@ export class ProductService {
     most_viewed: Product[];
     premium: Product[];
   }> {
-    const featuredPromise = this.userDb
+    const featuredPromise = this.adminDb
       .from('featured_products')
       .select(`
         product:products(
@@ -218,7 +218,7 @@ export class ProductService {
       .eq('section', 'homepage')
       .order('sort_order');
  
-    const topPromise = this.userDb
+    const topPromise = this.adminDb
       .from('products')
       .select(`
         *,
@@ -231,7 +231,7 @@ export class ProductService {
       .order('views_count', { ascending: false })
       .limit(10);
  
-    const recommendedPromise = this.userDb
+    const recommendedPromise = this.adminDb
       .from('products')
       .select(`
         *,
@@ -243,7 +243,7 @@ export class ProductService {
       .order('created_at', { ascending: false })
       .limit(20);
  
-    const mostViewedPromise = this.userDb
+    const mostViewedPromise = this.adminDb
       .from('products')
       .select(`
         *,
@@ -255,7 +255,7 @@ export class ProductService {
       .order('views_count', { ascending: false })
       .limit(10);
  
-    const premiumPromise = this.userDb
+    const premiumPromise = this.adminDb
       .from('products')
       .select(`
         *,
