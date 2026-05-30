@@ -13,9 +13,14 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = useAppStore.getState().token;
+    const state = useAppStore.getState();
+    const token = state.token;
+    console.log(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, token ? `TOKEN=${token.slice(0,12)}...` : 'NO TOKEN');
+    console.log(`[API] Full headers:`, JSON.stringify(config.headers));
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.warn(`[API] WARNING: No token for ${config.url}`);
     }
     return config;
   },
@@ -24,26 +29,9 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      try {
-        const tg = (window as any)?.Telegram?.WebApp;
-        const initData = tg?.initData;
-        if (initData) {
-          const { authService } = await import('./endpoints');
-          const res = await authService.init(initData);
-          if (res.success && res.data?.token) {
-            useAppStore.getState().setToken(res.data.token);
-            error.config.headers.Authorization = `Bearer ${res.data.token}`;
-            return api.request(error.config);
-          }
-        }
-      } catch (e) {
-        console.error('Re-auth failed:', e);
-      }
-    }
+  (error) => {
     const message = error.response?.data?.error || 'Xatolik yuz berdi';
-    console.error('API Error:', message);
+    console.error('API Error:', error.response?.status, message);
     return Promise.reject(error);
   }
 );
