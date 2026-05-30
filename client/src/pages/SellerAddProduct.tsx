@@ -89,7 +89,9 @@ export default function SellerAddProduct() {
 
       if (json.success) {
         toast.success('Mahsulot qo\'shildi!');
-        goBack();
+        setTimeout(() => {
+          navigate('/seller/products', { replace: true });
+        }, 1500);
       } else {
         toast.error(json.error || 'Xatolik yuz berdi');
       }

@@ -1,38 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { FiArrowLeft, FiTrash2, FiEdit } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { useAppStore } from '../store/appStore';
 import { productService, sellerService } from '../services/endpoints';
 import ProductEditModal from '../components/seller/ProductEditModal';
 
 export default function SellerProducts() {
   const navigate = useNavigate();
-  const { token } = useAppStore();
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
+  const { data: products = [], refetch, isLoading } = useQuery({
+    queryKey: ['seller-products'],
+    queryFn: async () => {
       const sellerRes = await sellerService.getMe();
       if (sellerRes.success && sellerRes.data) {
         const prodRes = await productService.getSellerProducts(sellerRes.data.id);
-        setProducts(prodRes.data || []);
-      } else {
-        toast.error('Sotuvchi ma\'lumotlari topilmadi');
+        return prodRes.data || [];
       }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      toast.error('Mahsulotlarni yuklashda xatolik');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return [];
+    },
+  });
 
   useEffect(() => {
-    fetchProducts();
+    refetch();
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
@@ -40,7 +31,7 @@ export default function SellerProducts() {
     try {
       await productService.delete(id);
       toast.success('Mahsulot o\'chirildi');
-      setProducts(prev => prev.filter(p => p.id !== id));
+      refetch();
     } catch (error) {
       toast.error('Xatolik yuz berdi');
     }
@@ -61,7 +52,7 @@ export default function SellerProducts() {
       </div>
 
       <div className="container-app py-4 space-y-3">
-        {loading ? (
+        {isLoading ? (
           [1, 2, 3].map((i) => (
             <div key={i} className="card p-4 animate-pulse"><div className="flex gap-3"><div className="w-16 h-16 skeleton rounded-xl" /><div className="flex-1 space-y-2"><div className="h-4 skeleton w-3/4" /><div className="h-3 skeleton w-1/3" /></div></div></div>
           ))
@@ -100,7 +91,7 @@ export default function SellerProducts() {
         <ProductEditModal 
           product={editingProduct} 
           onClose={() => setEditingProduct(null)} 
-          onSuccess={fetchProducts} 
+          onSuccess={() => refetch()} 
         />
       )}
     </div>
