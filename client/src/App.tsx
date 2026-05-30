@@ -17,59 +17,53 @@ import SellerAddProduct from './pages/SellerAddProduct';
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
-  const { initTg, setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
+  const { setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     async function doAuth() {
       try {
-        initTg();
-
         const tg = (window as any)?.Telegram?.WebApp;
-        if (tg) tg.ready();
+
+        if (tg) {
+          tg.ready();
+          tg.expand();
+        }
 
         const initData = tg?.initData;
 
-        console.log('=== AUTH DEBUG ===');
-        console.log('tg:', !!tg);
-        console.log('initData:', initData);
-        console.log('token before auth:', useAppStore.getState().token);
-
-        let res;
-
         if (initData) {
-          res = await authService.init(initData);
+          // Telegram ichida — normal auth
+          const res = await authService.init(initData);
+          if (res.success && res.data?.token) {
+            setUser(res.data.user);
+            setSeller(res.data.seller);
+            setIsSeller(res.data.is_seller);
+            setIsAdmin(res.data.is_admin);
+            setToken(res.data.token);
+          }
         } else {
-          const urlParams = new URLSearchParams(window.location.search);
-          const userId = urlParams.get('user');
+          // Telegram tashqarida — telegramId dan token ol
+          const params = new URLSearchParams(window.location.search);
+          const urlUserId = params.get('user');
           const storeId = useAppStore.getState().telegramId;
-          const telegramId = storeId || (userId ? parseInt(userId) : null);
+          const telegramId = storeId || (urlUserId ? parseInt(urlUserId) : null);
 
           if (telegramId) {
-            console.log('Falling back to initById for telegramId:', telegramId);
-            res = await authService.initById(telegramId);
-          } else {
-            console.error('No auth method available');
-            setAuthReady(false);
-            return;
+            const res = await authService.initById(telegramId);
+            if (res.success && res.data?.token) {
+              setUser(res.data.user);
+              setSeller(res.data.seller);
+              setIsSeller(res.data.is_seller);
+              setIsAdmin(res.data.is_admin);
+              setToken(res.data.token);
+            }
           }
-        }
-
-        if (res && res.success && res.data?.token) {
-          setUser(res.data.user);
-          setSeller(res.data.seller);
-          setIsSeller(res.data.is_seller);
-          setIsAdmin(res.data.is_admin);
-          setToken(res.data.token);
-          setAuthReady(true);
-        } else {
-          setAuthReady(false);
         }
       } catch (err) {
         console.error('Auth init failed:', err);
-        setAuthReady(false);
       } finally {
-        // setAuthReady(true) bu yerdan olib tashlandi, chunki u tokenni kutmasdan ochib yuborayotgan edi
+        setAuthReady(true);
       }
     }
 
