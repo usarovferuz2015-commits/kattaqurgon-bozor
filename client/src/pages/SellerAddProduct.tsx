@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
-import { sellerService, categoryService, productService } from '../services/endpoints';
+import { sellerService, categoryService, productService, authService } from '../services/endpoints';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
@@ -116,10 +116,29 @@ export default function SellerAddProduct() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Rasm hajmi 5MB dan oshmasligi kerak');
       return;
+    }
+
+    // Token yo'q bo'lsa, avval olishga harakat qil
+    let token = useAppStore.getState().token;
+    if (!token) {
+      const params = new URLSearchParams(window.location.search);
+      const urlUserId = params.get('user');
+      const storeId = useAppStore.getState().telegramId;
+      const telegramId = storeId || (urlUserId ? parseInt(urlUserId) : null);
+      if (telegramId) {
+        try {
+          const res = await authService.initById(telegramId);
+          if (res.success && res.data?.token) {
+            useAppStore.getState().setToken(res.data.token);
+            token = res.data.token;
+          }
+        } catch (e) {
+          console.error('Token refresh failed:', e);
+        }
+      }
     }
 
     setUploadingImage(true);
@@ -135,9 +154,10 @@ export default function SellerAddProduct() {
         } else {
           toast.error(json.error || 'Rasm yuklashda xatolik yuz berdi');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Upload error:', error);
-        toast.error('Serverga ulanishda xatolik yuz berdi');
+        const msg = error.response?.data?.error || error.message || 'Serverga ulanishda xatolik';
+        toast.error(msg);
       } finally {
         setUploadingImage(false);
       }
