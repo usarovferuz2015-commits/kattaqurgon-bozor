@@ -14,7 +14,7 @@ import SellerDashboard from './pages/SellerDashboard';
 import SellerProducts from './pages/SellerProducts';
 import SellerAddProduct from './pages/SellerAddProduct';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
   const { setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
@@ -24,7 +24,6 @@ function App() {
     async function doAuth() {
       try {
         const tg = (window as any)?.Telegram?.WebApp;
-
         if (tg) {
           tg.ready();
           tg.expand();
@@ -33,7 +32,6 @@ function App() {
         const initData = tg?.initData;
 
         if (initData) {
-          // Telegram ichida — normal auth
           const res = await authService.init(initData);
           if (res.success && res.data?.token) {
             setUser(res.data.user);
@@ -43,7 +41,6 @@ function App() {
             setToken(res.data.token);
           }
         } else {
-          // Telegram tashqarida — telegramId dan token ol
           const params = new URLSearchParams(window.location.search);
           const urlUserId = params.get('user');
           const storeId = useAppStore.getState().telegramId;
@@ -101,5 +98,4 @@ function App() {
   );
 }
 
-export { API_BASE };
 export default App;
