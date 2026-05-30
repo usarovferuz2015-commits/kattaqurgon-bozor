@@ -39,7 +39,7 @@ export default function SellerAddProduct() {
   });
 
   const goBack = () => {
-    navigate('/seller/products');
+    navigate('/seller');
   };
 
   if (!telegramId) {
