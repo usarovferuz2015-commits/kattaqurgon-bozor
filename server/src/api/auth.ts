@@ -15,6 +15,8 @@ const router = Router();
 router.post('/init', validate(AuthSchema.init), async (req: Request, res: Response) => {
   try {
     const { initData } = req.body;
+    console.log('initData received:', initData?.substring(0, 100));
+    console.log('initData length:', initData?.length);
 
     if (!initData) {
       return res.status(400).json({ success: false, error: 'initData required' });
