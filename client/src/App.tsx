@@ -38,10 +38,8 @@ function App() {
         let res;
 
         if (initData) {
-          // Normal flow: signed initData from Telegram WebView
           res = await authService.init(initData);
         } else {
-          // Fallback: use telegramId from URL (added by bot)
           const urlParams = new URLSearchParams(window.location.search);
           const userId = urlParams.get('user');
           const storeId = useAppStore.getState().telegramId;
@@ -51,8 +49,8 @@ function App() {
             console.log('Falling back to initById for telegramId:', telegramId);
             res = await authService.initById(telegramId);
           } else {
-            console.warn('No auth method available, allowing access');
-            setAuthReady(true);
+            console.error('No auth method available');
+            setAuthReady(false);
             return;
           }
         }
@@ -63,11 +61,15 @@ function App() {
           setIsSeller(res.data.is_seller);
           setIsAdmin(res.data.is_admin);
           setToken(res.data.token);
+          setAuthReady(true);
+        } else {
+          setAuthReady(false);
         }
       } catch (err) {
         console.error('Auth init failed:', err);
+        setAuthReady(false);
       } finally {
-        setAuthReady(true);
+        // setAuthReady(true) bu yerdan olib tashlandi, chunki u tokenni kutmasdan ochib yuborayotgan edi
       }
     }
 
