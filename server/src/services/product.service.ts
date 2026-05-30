@@ -240,9 +240,8 @@ export class ProductService {
         category:categories(id, name_uz, slug, icon)
       `)
       .eq('status', 'active')
-      .eq('is_on_sale', true)
-      .order('discount_percent', { ascending: false })
-      .limit(10);
+      .order('created_at', { ascending: false })
+      .limit(20);
  
     const mostViewedPromise = this.userDb
       .from('products')
