@@ -17,7 +17,7 @@ interface SessionData {
 
 type MyContext = Context & SessionFlavor<SessionData>;
 
-const WEB_APP_URL = config.app.webAppUrl;
+const WEB_APP_URL = 'https://kattaqurgon-bozor.vercel.app';
 const ADMIN_WEB_APP_URL = config.app.adminWebAppUrl;
 
 export function createBot(): Bot<MyContext> {
