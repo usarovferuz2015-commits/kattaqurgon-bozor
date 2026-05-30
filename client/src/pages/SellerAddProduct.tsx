@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 import { sellerService, categoryService, productService } from '../services/endpoints';
 import { useQuery } from '@tanstack/react-query';
@@ -6,6 +7,7 @@ import toast from 'react-hot-toast';
 import { FiArrowLeft, FiUpload, FiX } from 'react-icons/fi';
 
 export default function SellerAddProduct() {
+  const navigate = useNavigate();
   const { telegramId: storeTelegramId } = useAppStore();
 
   const params = new URLSearchParams(window.location.search);
@@ -37,7 +39,7 @@ export default function SellerAddProduct() {
   });
 
   const goBack = () => {
-    window.history.back();
+    navigate('/seller/products');
   };
 
   if (!telegramId) {

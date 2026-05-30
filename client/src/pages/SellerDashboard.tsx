@@ -1,8 +1,12 @@
-import { FiPlus, FiPackage, FiShoppingBag } from 'react-icons/fi';
+import { FiPlus, FiPackage, FiShoppingBag, FiEye } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store/appStore';
 
-const WEB_URL = 'https://client-olive-six-20.vercel.app';
+const WEB_URL = import.meta.env.VITE_WEB_APP_URL || 'https://kattaqurgon-bozor.vercel.app';
 
 export default function SellerDashboard() {
+  const navigate = useNavigate();
+  const seller = useAppStore((s) => s.seller);
   const telegramId = new URLSearchParams(window.location.search).get('user');
   const role = new URLSearchParams(window.location.search).get('role');
 
@@ -61,6 +65,19 @@ export default function SellerDashboard() {
           </div>
           <span className="text-dark-300">→</span>
         </a>
+
+        {seller?.store_slug && (
+          <button onClick={() => navigate(`/seller/${seller.store_slug}`)} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+              <FiEye className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-dark-900">Mening do'konim</p>
+              <p className="text-sm text-dark-400">Do'koningizni ko'ring</p>
+            </div>
+            <span className="text-dark-300">→</span>
+          </button>
+        )}
 
         <a href={`${WEB_URL}/cart?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
           <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">

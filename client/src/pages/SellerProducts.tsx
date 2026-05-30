@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { FiArrowLeft, FiTrash2, FiPlus, FiEdit } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiArrowLeft, FiTrash2, FiEdit } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useAppStore } from '../store/appStore';
 import { productService, sellerService } from '../services/endpoints';
 import ProductEditModal from '../components/seller/ProductEditModal';
 
-const WEB_URL = 'https://client-olive-six-20.vercel.app';
-
 export default function SellerProducts() {
+  const navigate = useNavigate();
   const { token } = useAppStore();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function SellerProducts() {
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
-  const goBack = () => { window.location.href = `${WEB_URL}/seller`; };
+  const goBack = () => { navigate('/seller'); };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,7 +57,6 @@ export default function SellerProducts() {
             <button onClick={goBack} className="p-1 -ml-1"><FiArrowLeft className="w-5 h-5" /></button>
             <h1 className="font-bold">Mahsulotlarim</h1>
           </div>
-          <a href={`${WEB_URL}/seller/add-product`} className="p-2 bg-primary-600 text-white rounded-xl"><FiPlus className="w-5 h-5" /></a>
         </div>
       </div>
 
@@ -71,7 +70,6 @@ export default function SellerProducts() {
 
             <span className="text-4xl">📦</span>
             <p className="text-dark-500 mt-3">Hali mahsulot qo'shmagansiz</p>
-            <a href={`${WEB_URL}/seller/add-product`} className="btn-primary mt-4 inline-block">Mahsulot qo'shish</a>
           </div>
         ) : (
           products.map((product: any) => (
