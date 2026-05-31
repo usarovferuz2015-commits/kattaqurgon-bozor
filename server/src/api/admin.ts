@@ -164,9 +164,14 @@ router.get('/ads', async (_req: Request, res: Response) => {
 
 router.post('/ads', async (req: Request, res: Response) => {
   try {
-    // Remove seller_id if empty (allows null)
     const data = { ...req.body };
     if (!data.seller_id) delete data.seller_id;
+    if (!data.starts_at) data.starts_at = new Date().toISOString();
+    if (!data.expires_at) {
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 30);
+      data.expires_at = expires.toISOString();
+    }
     const ad = await adminService.createPremiumAd(data);
     res.status(201).json({ success: true, data: ad });
   } catch (error: any) {
