@@ -103,7 +103,7 @@ export const useAppStore = create<AppState>()(
         }
       },
 
-      setUser: (user) => set({ user }),
+      setUser: (user) => set({ user, telegramId: user?.telegram_id ?? null }),
       setSeller: (seller) => set({ seller }),
       setIsSeller: (isSeller) => set({ isSeller }),
       setIsAdmin: (isAdmin) => set({ isAdmin }),
@@ -190,6 +190,7 @@ export const useAppStore = create<AppState>()(
         name: 'kattaqurgon-cart',
         partialize: (state) => ({
           token: state.token,
+          telegramId: state.telegramId,
           cart: state.cart,
           cartCount: state.cartCount,
           cartTotal: state.cartTotal,
