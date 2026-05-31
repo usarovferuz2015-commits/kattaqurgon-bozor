@@ -4,6 +4,7 @@ import { useAppStore } from '../store/appStore';
 import { productService } from '../services/endpoints';
 import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiMessageCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { goBack } from '../utils/navigation';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
           <div className="flex items-center gap-3 h-12 px-4">
-            <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+            <button onClick={() => goBack(navigate, '/')} className="p-1 -ml-1">
               <FiArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="font-bold">Savatcha</h1>
@@ -89,7 +90,7 @@ export default function CartPage() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between h-12 px-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+            <button onClick={() => goBack(navigate, '/')} className="p-1 -ml-1">
               <FiArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="font-bold">Savatcha</h1>

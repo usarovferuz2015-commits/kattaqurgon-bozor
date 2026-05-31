@@ -6,6 +6,7 @@ import { useAppStore } from '../store/appStore';
 import ProductCard from '../components/marketplace/ProductCard';
 import { FiArrowLeft, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { ProductGridSkeleton } from '../components/ui/Skeleton';
+import { goBack } from '../utils/navigation';
 
 export default function SearchPage() {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ export default function SearchPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 h-14 px-4">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+          <button onClick={() => goBack(navigate, '/')} className="p-1 -ml-1">
             <FiArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 relative">

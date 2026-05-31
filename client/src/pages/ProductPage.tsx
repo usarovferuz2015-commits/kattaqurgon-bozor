@@ -1,8 +1,9 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { productService } from '../services/endpoints';
 import { useAppStore } from '../store/appStore';
+import { goBack } from '../utils/navigation';
 import toast from 'react-hot-toast';
 import { FiShoppingCart, FiHeart, FiShare2, FiArrowLeft, FiMessageCircle, FiPhone, FiStar } from 'react-icons/fi';
 import StarRating from '../components/marketplace/StarRating';
@@ -147,7 +148,7 @@ export default function ProductPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="flex items-center justify-between h-12 px-4">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+          <button onClick={() => goBack(navigate, '/')} className="p-1 -ml-1">
             <FiArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex gap-2">

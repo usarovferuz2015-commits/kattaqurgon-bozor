@@ -7,6 +7,7 @@ import StoreHeader from '../components/marketplace/StoreHeader';
 import StoreFilters from '../components/marketplace/StoreFilters';
 import StoreProductGrid from '../components/marketplace/StoreProductGrid';
 import { FiArrowLeft, FiShoppingCart } from 'react-icons/fi';
+import { goBack } from '../utils/navigation';
 
 export default function SellerPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -60,7 +61,7 @@ export default function SellerPage() {
           <>
             {/* Navigation bar */}
             <div className="flex items-center justify-between mb-2">
-              <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-gray-100 rounded-xl">
+              <button onClick={() => goBack(navigate, '/')} className="p-2 -ml-2 hover:bg-gray-100 rounded-xl">
                 <FiArrowLeft className="w-5 h-5" />
               </button>
               <Link to="/cart" className="relative p-2 hover:bg-gray-100 rounded-xl">
