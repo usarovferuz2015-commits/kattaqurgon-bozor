@@ -15,7 +15,14 @@ export default function CartPage() {
 
   const handleContactSellers = async () => {
     if (!telegramId) {
-      toast.error('Telegram profilingiz aniqlanmadi');
+      const tg = (window as any)?.Telegram?.WebApp;
+      const botUsername = 'kattaqurgon_bozori_bot';
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(`https://t.me/${botUsername}`);
+      } else {
+        window.open(`https://t.me/${botUsername}`, '_blank');
+      }
+      toast.error('Iltimos, bot orqali kiring');
       return;
     }
 
