@@ -236,7 +236,7 @@ export default function ProductPage() {
 
         {/* Seller */}
         <Link
-          to={`/seller/${product.seller?.id}`}
+          to={`/seller/${product.seller?.store_slug || product.seller?.id}`}
           className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
         >
           <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center text-xl">

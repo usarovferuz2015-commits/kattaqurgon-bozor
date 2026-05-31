@@ -110,7 +110,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {product.seller && (
           <Link 
-            to={`/seller/${product.seller.store_slug}`}
+            to={`/seller/${product.seller.store_slug || product.seller.id}`}
             className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary-600 transition-colors mt-2"
           >
             {product.seller.store_name}
