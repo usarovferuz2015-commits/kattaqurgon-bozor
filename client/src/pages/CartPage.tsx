@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { productService } from '../services/endpoints';
@@ -6,6 +6,7 @@ import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiMessageCircle 
 import toast from 'react-hot-toast';
 
 export default function CartPage() {
+  const navigate = useNavigate();
   const { cart, cartCount, cartTotal, updateCartQuantity, removeFromCart, clearCart, telegramId } = useAppStore();
   const [contacting, setContacting] = useState(false);
 
@@ -67,9 +68,9 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
           <div className="flex items-center gap-3 h-12 px-4">
-            <Link to="/" className="p-1 -ml-1">
+            <button onClick={() => navigate(-1)} className="p-1 -ml-1">
               <FiArrowLeft className="w-5 h-5" />
-            </Link>
+            </button>
             <h1 className="font-bold">Savatcha</h1>
           </div>
         </div>
@@ -77,7 +78,7 @@ export default function CartPage() {
           <FiShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
           <p className="text-dark-500 text-lg font-medium">Savatcha bo'sh</p>
           <p className="text-dark-400 text-sm mt-1">Mahsulot qo'shish uchun katalogni ko'ring</p>
-          <Link to="/" className="btn-primary mt-6">Katalogga o'tish</Link>
+          <button onClick={() => navigate('/')} className="btn-primary mt-6">Katalogga o'tish</button>
         </div>
       </div>
     );
@@ -88,9 +89,9 @@ export default function CartPage() {
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between h-12 px-4">
           <div className="flex items-center gap-3">
-            <Link to="/" className="p-1 -ml-1">
+            <button onClick={() => navigate(-1)} className="p-1 -ml-1">
               <FiArrowLeft className="w-5 h-5" />
-            </Link>
+            </button>
             <h1 className="font-bold">Savatcha</h1>
             <span className="text-sm text-dark-400">({cartCount} ta)</span>
           </div>

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { productService } from '../services/endpoints';
+import { useAppStore } from '../store/appStore';
 import ProductCard from '../components/marketplace/ProductCard';
-import { FiArrowLeft, FiSearch } from 'react-icons/fi';
+import { FiArrowLeft, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { ProductGridSkeleton } from '../components/ui/Skeleton';
 
 export default function SearchPage() {
+  const navigate = useNavigate();
+  const cartCount = useAppStore((s) => s.cartCount);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const [input, setInput] = useState(query);
@@ -42,9 +44,9 @@ export default function SearchPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="flex items-center gap-3 h-14 px-4">
-          <Link to="/" className="p-1 -ml-1">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1">
             <FiArrowLeft className="w-5 h-5" />
-          </Link>
+          </button>
           <div className="flex-1 relative">
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -56,6 +58,14 @@ export default function SearchPage() {
               autoFocus
             />
           </div>
+          <Link to="/cart" className="relative p-2 hover:bg-gray-100 rounded-xl">
+            <FiShoppingCart className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-accent-500 text-white text-[9px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 

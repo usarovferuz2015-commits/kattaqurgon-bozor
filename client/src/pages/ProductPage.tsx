@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { productService } from '../services/endpoints';
@@ -10,6 +10,7 @@ import Reviews from '../components/marketplace/Reviews';
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { addToCart, telegramId } = useAppStore();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -146,20 +147,10 @@ export default function ProductPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="flex items-center justify-between h-12 px-4">
-          <Link to="/" className="p-1 -ml-1">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1">
             <FiArrowLeft className="w-5 h-5" />
-          </Link>
+          </button>
           <div className="flex gap-2">
-            <button 
-              type="button"
-              onClick={() => {
-                window.alert("Test ishlayapti!");
-                handleContactSeller();
-              }} 
-              className="p-2 bg-red-500 rounded-xl text-white text-xs"
-            >
-              Yozish (Test)
-            </button>
             <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-xl">
               <FiShare2 className="w-5 h-5" />
             </button>

@@ -1,12 +1,15 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { categoryService, productService } from '../services/endpoints';
 import ProductCard from '../components/marketplace/ProductCard';
-import { FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft, FiChevronRight, FiShoppingCart } from 'react-icons/fi';
 import { ProductGridSkeleton } from '../components/ui/Skeleton';
+import { useAppStore } from '../store/appStore';
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const cartCount = useAppStore((s) => s.cartCount);
 
   const { data: categoryData, isLoading: catLoading } = useQuery({
     queryKey: ['category', slug],
@@ -15,6 +18,14 @@ export default function CategoryPage() {
       return res.data;
     },
     enabled: !!slug,
+  });
+
+  const { data: allCategories } = useQuery({
+    queryKey: ['categories-flat'],
+    queryFn: async () => {
+      const res = await categoryService.getFlat();
+      return res.data;
+    },
   });
 
   const { data: productsData, isLoading: prodLoading } = useQuery({
@@ -30,18 +41,60 @@ export default function CategoryPage() {
   const category = categoryData;
   const products = productsData?.data || [];
 
+  // Build breadcrumb chain from parent_id
+  const breadcrumb: { name: string; slug: string }[] = [];
+  if (category && allCategories) {
+    let current = category;
+    while (current) {
+      breadcrumb.unshift({ name: current.name_uz, slug: current.slug });
+      if (current.parent_id) {
+        const parent = allCategories.find((c: any) => c.id === current.parent_id);
+        current = parent;
+      } else {
+        break;
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-3 h-12 px-4">
-          <Link to="/" className="p-1 -ml-1">
-            <FiArrowLeft className="w-5 h-5" />
+        <div className="flex items-center justify-between h-12 px-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+              <FiArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="font-bold text-dark-900">
+              {category?.name_uz || 'Kategoriya'}
+            </h1>
+          </div>
+          <Link to="/cart" className="relative p-2 hover:bg-gray-100 rounded-xl">
+            <FiShoppingCart className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-accent-500 text-white text-[9px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
           </Link>
-          <h1 className="font-bold text-dark-900">
-            {category?.name_uz || 'Kategoriya'}
-          </h1>
         </div>
+        {/* Breadcrumb */}
+        {breadcrumb.length > 1 && (
+          <div className="flex items-center gap-1 px-4 pb-2 text-xs text-dark-400 overflow-x-auto no-scrollbar">
+            {breadcrumb.map((item, idx) => (
+              <span key={item.slug} className="flex items-center gap-1 whitespace-nowrap">
+                {idx > 0 && <FiChevronRight className="w-3 h-3" />}
+                {idx === breadcrumb.length - 1 ? (
+                  <span className="text-dark-600 font-medium">{item.name}</span>
+                ) : (
+                  <Link to={`/category/${item.slug}`} className="hover:text-primary-600 transition-colors">
+                    {item.name}
+                  </Link>
+                )}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="container-app py-4">

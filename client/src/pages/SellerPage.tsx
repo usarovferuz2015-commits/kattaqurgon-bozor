@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { sellerService, productService, categoryService } from '../services/endpoints';
+import { useAppStore } from '../store/appStore';
 import StoreHeader from '../components/marketplace/StoreHeader';
 import StoreFilters from '../components/marketplace/StoreFilters';
 import StoreProductGrid from '../components/marketplace/StoreProductGrid';
+import { FiArrowLeft, FiShoppingCart } from 'react-icons/fi';
 
 export default function SellerPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const cartCount = useAppStore((s) => s.cartCount);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
@@ -54,6 +58,20 @@ export default function SellerPage() {
           <div className="w-full h-64 bg-gray-200 animate-pulse rounded-3xl" />
         ) : storeData ? (
           <>
+            {/* Navigation bar */}
+            <div className="flex items-center justify-between mb-2">
+              <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-gray-100 rounded-xl">
+                <FiArrowLeft className="w-5 h-5" />
+              </button>
+              <Link to="/cart" className="relative p-2 hover:bg-gray-100 rounded-xl">
+                <FiShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-accent-500 text-white text-[9px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
+              </Link>
+            </div>
             <StoreHeader seller={storeData} />
             
             <StoreFilters 
