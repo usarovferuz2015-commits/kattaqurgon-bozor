@@ -339,7 +339,7 @@ export class ProductService {
   }
  
   async getSellerProductCount(sellerId: string): Promise<number> {
-    const { count } = await this.userDb
+    const { count } = await this.adminDb
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('seller_id', sellerId);
