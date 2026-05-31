@@ -38,6 +38,7 @@ interface AppState {
   setIsSeller: (val: boolean) => void;
   setIsAdmin: (val: boolean) => void;
   setToken: (token: string | null) => void;
+  setTelegramId: (id: number | null) => void;
 
   // Cart actions
   addToCart: (item: CartItem) => void;
@@ -107,6 +108,7 @@ export const useAppStore = create<AppState>()(
       setIsSeller: (isSeller) => set({ isSeller }),
       setIsAdmin: (isAdmin) => set({ isAdmin }),
       setToken: (token) => set({ token }),
+      setTelegramId: (id) => set({ telegramId: id }),
 
       addToCart: (item) => {
         const state = get();

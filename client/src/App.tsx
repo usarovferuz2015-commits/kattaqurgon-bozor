@@ -17,7 +17,7 @@ import SellerAddProduct from './pages/SellerAddProduct';
 export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function App() {
-  const { setUser, setSeller, setIsSeller, setIsAdmin, setToken } = useAppStore();
+  const { setUser, setSeller, setIsSeller, setIsAdmin, setToken, setTelegramId } = useAppStore();
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ function App() {
             setIsSeller(res.data.is_seller);
             setIsAdmin(res.data.is_admin);
             setToken(res.data.token);
+            setTelegramId(res.data.user?.telegram_id || null);
           }
         } else {
           const params = new URLSearchParams(window.location.search);
@@ -54,6 +55,7 @@ function App() {
               setIsSeller(res.data.is_seller);
               setIsAdmin(res.data.is_admin);
               setToken(res.data.token);
+              setTelegramId(telegramId);
             }
           }
         }
