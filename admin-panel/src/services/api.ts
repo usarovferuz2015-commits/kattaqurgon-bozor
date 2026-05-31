@@ -1,20 +1,26 @@
 import axios from 'axios';
 import qs from 'qs';
 
+const API_BASE = '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   timeout: 15000,
 });
 
 // Auth token management for admin panel
 let adminAuthToken: string | null = null;
+let isAuthing = false;
 
 async function initAdminAuth(adminId: number): Promise<string | null> {
+  if (isAuthing) return adminAuthToken;
+  isAuthing = true;
   try {
+    // Direct axios call (bypass interceptor to avoid recursion)
     const initData = (window as any)?.Telegram?.WebApp?.initData;
     
     if (initData) {
-      const { data } = await api.post('/auth/init', { initData });
+      const { data } = await axios.post(`${API_BASE}/auth/init`, { initData });
       if (data.success && data.data.token) {
         adminAuthToken = data.data.token;
         return data.data.token;
@@ -22,13 +28,15 @@ async function initAdminAuth(adminId: number): Promise<string | null> {
     }
     
     // Desktop fallback: init-by-id
-    const { data } = await api.post('/auth/init-by-id', { telegram_id: adminId });
+    const { data } = await axios.post(`${API_BASE}/auth/init-by-id`, { telegram_id: adminId });
     if (data.success && data.data.token) {
       adminAuthToken = data.data.token;
       return data.data.token;
     }
   } catch (err) {
     console.error('Admin auth failed:', err);
+  } finally {
+    isAuthing = false;
   }
   return null;
 }
