@@ -8,6 +8,7 @@ import { verifyTelegramInitData, generateToken } from '../utils/auth.utils';
 import { authMiddleware } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { AuthSchema } from '../utils/validation';
+import { isAdmin } from '../config';
 
 const router = Router();
 
@@ -70,10 +71,11 @@ router.post('/init-by-id', async (req: Request, res: Response) => {
 
     const user = await userService.findOrCreate(telegram_id, {});
     const seller = await sellerService.getByTelegramId(telegram_id);
+    const role = isAdmin(telegram_id) ? 'admin' : user.role;
     const token = generateToken({
       id: user.id,
       telegramId: telegram_id,
-      role: user.role,
+      role,
     });
 
     res.json({
@@ -83,7 +85,7 @@ router.post('/init-by-id', async (req: Request, res: Response) => {
         user,
         seller,
         is_seller: !!seller,
-        is_admin: user.role === 'admin',
+        is_admin: role === 'admin',
       },
     });
   } catch (error: any) {
