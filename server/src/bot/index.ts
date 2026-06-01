@@ -239,11 +239,12 @@ export function createBot(): Bot<MyContext> {
   });
 
   // === Reply to buyer handler ===
-  bot.callbackQuery(/^reply_(\d+)_(.+)$/, async (ctx) => {
+  bot.callbackQuery(/^reply_(\d+)$/, async (ctx) => {
     const buyerTelegramId = parseInt(ctx.match[1]);
-    const productSlug = ctx.match[2];
-    const buyerName = ctx.callbackQuery.message?.text?.match(/👤 Xaridor: (.+)/)?.[1] || 'Xaridor';
-    const productName = ctx.callbackQuery.message?.text?.match(/📦 Mahsulot: <b>(.+?)<\/b>/)?.[1] || 'Mahsulot';
+    const buyerName = ctx.session.replyToBuyer?.buyerName || 
+      ctx.callbackQuery.message?.text?.match(/👤 Xaridor: (.+)/)?.[1] || 'Xaridor';
+    const productName = ctx.session.replyToBuyer?.productName ||
+      ctx.callbackQuery.message?.text?.match(/📦 Mahsulot: (.+)/)?.[1] || 'Mahsulot';
     
     ctx.session.replyToBuyer = { buyerTelegramId, buyerName, productName };
     ctx.session.step = 'reply_to_buyer';
@@ -326,7 +327,13 @@ export function createBot(): Bot<MyContext> {
           `💬 Sotuvchiga javob yozish: tg://user?id=${telegramId}`,
           { parse_mode: 'HTML' }
         );
-        await ctx.reply('✅ Javobingiz xaridorga yuborildi!');
+        await ctx.reply('✅ Javobingiz xaridorga yuborildi!', {
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '✏️ Yana javob yozish', callback_data: `reply_${buyerTelegramId}` }
+            ]]
+          }
+        });
       } catch (error) {
         console.error('Failed to send reply:', error);
         await ctx.reply('❌ Xatolik yuz berdi. Xaridor botni bloklagan bo\'lishi mumkin.');
