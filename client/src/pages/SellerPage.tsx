@@ -6,13 +6,14 @@ import { useAppStore } from '../store/appStore';
 import StoreHeader from '../components/marketplace/StoreHeader';
 import StoreFilters from '../components/marketplace/StoreFilters';
 import StoreProductGrid from '../components/marketplace/StoreProductGrid';
-import { FiArrowLeft, FiShoppingCart } from 'react-icons/fi';
+import { FiArrowLeft, FiShoppingCart, FiSettings } from 'react-icons/fi';
 import { goBack } from '../utils/navigation';
 
 export default function SellerPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const cartCount = useAppStore((s) => s.cartCount);
+  const currentUserId = useAppStore((s) => s.telegramId);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
@@ -73,6 +74,14 @@ export default function SellerPage() {
                 )}
               </Link>
             </div>
+            {currentUserId && storeData && currentUserId === storeData.telegram_id && (
+              <button
+                onClick={() => navigate('/seller')}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium mb-3 hover:bg-primary-700 transition-colors"
+              >
+                <FiSettings className="w-4 h-4" /> Sotuvchi paneli
+              </button>
+            )}
             <StoreHeader seller={storeData} />
             
             <StoreFilters 

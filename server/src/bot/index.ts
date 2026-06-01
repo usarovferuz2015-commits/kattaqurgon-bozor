@@ -332,7 +332,7 @@ export function createBot(): Bot<MyContext> {
       if (seller) {
         await ctx.reply('Do\'koningizni ko\'ring:', {
           reply_markup: new InlineKeyboard().row(
-            { text: '🏪 Do\'konim', web_app: { url: `${WEB_APP_URL}/seller/${seller.store_slug}` } }
+            { text: '🏪 Do\'konim', web_app: { url: `${WEB_APP_URL}/seller/${seller.store_slug}?user=${telegramId}` } }
           )
         });
       } else {
