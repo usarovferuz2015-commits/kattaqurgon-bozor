@@ -2,8 +2,6 @@ import { FiPlus, FiPackage, FiShoppingBag, FiEye } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
 
-const WEB_URL = import.meta.env.VITE_WEB_APP_URL || 'https://kattaqurgon-bozor.vercel.app';
-
 export default function SellerDashboard() {
   const navigate = useNavigate();
   const seller = useAppStore((s) => s.seller);
@@ -44,7 +42,7 @@ export default function SellerDashboard() {
       </div>
 
       <div className="p-4 space-y-3">
-        <a href={`${WEB_URL}/seller/add-product?user=${telegramId}&role=seller`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+        <button onClick={() => navigate('/seller/add-product')} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
           <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
             <FiPlus className="w-6 h-6 text-primary-600" />
           </div>
@@ -53,9 +51,9 @@ export default function SellerDashboard() {
             <p className="text-sm text-dark-400">Yangi mahsulot qo'shing</p>
           </div>
           <span className="text-dark-300">→</span>
-        </a>
+        </button>
 
-        <a href={`${WEB_URL}/seller/products?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+        <button onClick={() => navigate('/seller/products')} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
           <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center">
             <FiPackage className="w-6 h-6 text-accent-600" />
           </div>
@@ -64,7 +62,7 @@ export default function SellerDashboard() {
             <p className="text-sm text-dark-400">Barcha mahsulotlaringiz</p>
           </div>
           <span className="text-dark-300">→</span>
-        </a>
+        </button>
 
         {seller?.store_slug && (
           <button onClick={() => navigate(`/seller/${seller.store_slug}`)} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
@@ -79,7 +77,7 @@ export default function SellerDashboard() {
           </button>
         )}
 
-        <a href={`${WEB_URL}/cart?user=${telegramId}`} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 no-underline">
+        <button onClick={() => navigate('/cart')} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
           <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
             <FiShoppingBag className="w-6 h-6 text-green-600" />
           </div>
@@ -88,7 +86,7 @@ export default function SellerDashboard() {
             <p className="text-sm text-dark-400">Buyurtmalaringizni ko'ring</p>
           </div>
           <span className="text-dark-300">→</span>
-        </a>
+        </button>
       </div>
     </div>
   );
