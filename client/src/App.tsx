@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAppStore } from './store/appStore';
 import { authService } from './services/endpoints';
@@ -19,6 +19,7 @@ export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 function App() {
   const { setUser, setSeller, setIsSeller, setIsAdmin, setToken, setTelegramId } = useAppStore();
   const [authReady, setAuthReady] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     async function doAuth() {
@@ -68,6 +69,30 @@ function App() {
 
     doAuth();
   }, []);
+
+  // Telegram BackButton boshqaruvi
+  useEffect(() => {
+    try {
+      const tg = (window as any)?.Telegram?.WebApp;
+      if (tg?.BackButton) {
+        if (location.pathname === '/') {
+          tg.BackButton.hide();
+        } else {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => {
+            tg.BackButton.hide();
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = '/';
+            }
+          });
+        }
+      }
+    } catch (e) {
+      // Telegram WebView mavjud emas
+    }
+  }, [location.pathname]);
 
   if (!authReady) {
     return (
