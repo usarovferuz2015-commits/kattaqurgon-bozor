@@ -314,6 +314,33 @@ export function createBot(): Bot<MyContext> {
     const telegramId = ctx.from!.id;
     const session_data = ctx.session;
 
+    // Handle persistent keyboard buttons
+    if (text === '✏️ Javob yozish') {
+      if (session_data.replyToBuyer) {
+        ctx.session.step = 'reply_to_buyer';
+        await ctx.reply(
+          `✏️ <b>${session_data.replyToBuyer.buyerName}</b> ga javob yozing:`,
+          { parse_mode: 'HTML' }
+        );
+      } else {
+        await ctx.reply('Hozircha xaridorlar yo\'q. Yangi xaridor kelganda xabar beramiz.');
+      }
+      return;
+    }
+    if (text === '🏪 Do\'konim') {
+      const seller = await sellerService.getByTelegramId(telegramId);
+      if (seller) {
+        await ctx.reply('Do\'koningizni ko\'ring:', {
+          reply_markup: new InlineKeyboard().row(
+            { text: '🏪 Do\'konim', web_app: { url: `${WEB_APP_URL}/seller/${seller.store_slug}` } }
+          )
+        });
+      } else {
+        await ctx.reply('Sizda do\'kon mavjud emas. /start buyrug\'i orqali do\'kon oching.');
+      }
+      return;
+    }
+
     if (session_data.step === 'reply_to_buyer' && session_data.replyToBuyer) {
       const { buyerTelegramId, buyerName, productName } = session_data.replyToBuyer;
       session_data.step = 'idle';
@@ -329,9 +356,9 @@ export function createBot(): Bot<MyContext> {
         );
         await ctx.reply('✅ Javobingiz xaridorga yuborildi!', {
           reply_markup: {
-            inline_keyboard: [[
-              { text: '✏️ Yana javob yozish', callback_data: `reply_${buyerTelegramId}` }
-            ]]
+            keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🏪 Do\'konim' }]],
+            resize_keyboard: true,
+            is_persistent: true
           }
         });
       } catch (error) {
@@ -471,8 +498,7 @@ export async function notifyContactSeller(
       `👋 Yangi xaridor!\n\n` +
       `📦 Mahsulot: <b>${productName}</b>\n` +
       `👤 Xaridor: ${buyerName}\n\n` +
-      `Xaridorga javob yozish uchun pastdagi tugmani bosing:\n` +
-      `🛍 Mahsulot: ${webAppUrl}/product/${productSlug}`,
+      `Xaridorga javob yozish uchun pastdagi tugmani bosing:`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -482,6 +508,14 @@ export async function notifyContactSeller(
         }
       }
     );
+    // Send persistent keyboard that stays at bottom
+    await bot.api.sendMessage(sellerTelegramId, 'Pastki tugma orqali javob yozishingiz mumkin:', {
+      reply_markup: {
+        keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🏪 Do\'konim' }]],
+        resize_keyboard: true,
+        is_persistent: true
+      }
+    });
   } catch (error) {
     console.error(`Failed to notify seller ${sellerTelegramId}:`, error);
   }
