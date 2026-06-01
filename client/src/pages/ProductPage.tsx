@@ -64,40 +64,38 @@ export default function ProductPage() {
 
   const handleContactSeller = async () => {
     console.log("Contact button clicked. telegramId:", telegramId, "seller:", product.seller);
-    if (contacting) return;
-
+    
+    // Try to get telegramId from store or Telegram WebApp
     const tg = (window as any)?.Telegram?.WebApp;
+    const fetchedId = telegramId || useAppStore.getState().telegramId || tg?.initDataUnsafe?.user?.id;
+    console.log("Fetched telegramId:", fetchedId);
+
+    if (!fetchedId) {
+      const botUsername = 'kattaqurgon_bozori_bot';
+      const botUrl = `https://t.me/${botUsername}?start=app`;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(botUrl);
+      } else {
+        window.open(botUrl, '_blank');
+      }
+      toast.error('Iltimos, botdagi /start tugmasini bosing');
+      return;
+    }
+
+    if (contacting) return;
 
     // If seller has username, try opening direct chat first
     if (sellerTgLink && tg?.openTelegramLink) {
-      console.log("Opening direct chat via tg.openTelegramLink:", sellerTgLink);
       tg.openTelegramLink(sellerTgLink);
       return;
     }
 
     // Otherwise send notification via bot
-    if (!telegramId) {
-      console.error("Missing telegramId");
-      const botUsername = 'kattaqurgon_bozori_bot';
-      if (tg?.openTelegramLink) {
-        tg.openTelegramLink(`https://t.me/${botUsername}`);
-      } else {
-        window.open(`https://t.me/${botUsername}`, '_blank');
-      }
-      toast.error('Iltimos, bot orqali kiring');
-      return;
-    }
-
     setContacting(true);
     try {
-      console.log("Calling API contactSeller for slug:", product.slug);
-      const res = await productService.contactSeller(product.slug, telegramId);
-      console.log("API response:", res);
-      
+      const res = await productService.contactSeller(product.slug, fetchedId);
       if (res.success) {
         toast.success('Xabar sotuvchiga yuborildi!');
-
-        // If the seller has a username, offer direct link as well
         if (res.username && tg?.openTelegramLink) {
           tg.openTelegramLink(`https://t.me/${res.username}`);
         } else if (res.username) {
@@ -108,8 +106,6 @@ export default function ProductPage() {
       console.error("API error:", err);
       const msg = err?.response?.data?.error || err?.message || 'Xatolik yuz berdi';
       toast.error(msg);
-
-      // Fallback: try opening link directly
       if (sellerTgLink) {
         if (tg?.openTelegramLink) {
           tg.openTelegramLink(sellerTgLink);

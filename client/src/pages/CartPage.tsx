@@ -14,26 +14,29 @@ export default function CartPage() {
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
 
   const handleContactSellers = async () => {
-    if (!telegramId) {
-      const tg = (window as any)?.Telegram?.WebApp;
+    const tg = (window as any)?.Telegram?.WebApp;
+    const fetchedId = telegramId || useAppStore.getState().telegramId || tg?.initDataUnsafe?.user?.id;
+    console.log("Contact sellers. telegramId:", fetchedId);
+
+    if (!fetchedId) {
       const botUsername = 'kattaqurgon_bozori_bot';
+      const botUrl = `https://t.me/${botUsername}?start=app`;
       if (tg?.openTelegramLink) {
-        tg.openTelegramLink(`https://t.me/${botUsername}`);
+        tg.openTelegramLink(botUrl);
       } else {
-        window.open(`https://t.me/${botUsername}`, '_blank');
+        window.open(botUrl, '_blank');
       }
-      toast.error('Iltimos, bot orqali kiring');
+      toast.error('Iltimos, botdagi /start tugmasini bosing');
       return;
     }
 
-    const tg = (window as any)?.Telegram?.WebApp;
     setContacting(true);
 
     try {
       // Avval API orqali xabar yuborishga urinamiz
       for (const item of cart) {
         try {
-          const res = await productService.contactSeller(item.slug, telegramId);
+          const res = await productService.contactSeller(item.slug, fetchedId);
           // Agar sotuvchining usernamesi bo'lsa, to'g'ridan-to'g'ri chat ochamiz
           if (res.username && tg?.openTelegramLink) {
             tg.openTelegramLink(`https://t.me/${res.username}`);
