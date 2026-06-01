@@ -5,7 +5,8 @@ import { useAppStore } from '../store/appStore';
 export default function SellerDashboard() {
   const navigate = useNavigate();
   const seller = useAppStore((s) => s.seller);
-  const telegramId = new URLSearchParams(window.location.search).get('user');
+  const storeTelegramId = useAppStore((s) => s.telegramId);
+  const telegramId = new URLSearchParams(window.location.search).get('user') || String(storeTelegramId || '');
   const role = new URLSearchParams(window.location.search).get('role');
 
   const isSeller = telegramId && role === 'seller';
@@ -42,7 +43,7 @@ export default function SellerDashboard() {
       </div>
 
       <div className="p-4 space-y-3">
-        <button onClick={() => navigate('/seller/add-product')} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
+        <button onClick={() => navigate(`/seller/add-product?user=${telegramId}`)} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
           <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
             <FiPlus className="w-6 h-6 text-primary-600" />
           </div>
@@ -53,7 +54,7 @@ export default function SellerDashboard() {
           <span className="text-dark-300">→</span>
         </button>
 
-        <button onClick={() => navigate('/seller/products')} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
+        <button onClick={() => navigate(`/seller/products?user=${telegramId}`)} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
           <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center">
             <FiPackage className="w-6 h-6 text-accent-600" />
           </div>
@@ -77,7 +78,7 @@ export default function SellerDashboard() {
           </button>
         )}
 
-        <button onClick={() => navigate('/cart')} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
+        <button onClick={() => navigate(`/cart?user=${telegramId}`)} className="flex items-center gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 w-full text-left">
           <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
             <FiShoppingBag className="w-6 h-6 text-green-600" />
           </div>
