@@ -253,7 +253,14 @@ export function createBot(): Bot<MyContext> {
     await ctx.reply(
       `✏️ <b>${buyerName}</b> ga javob yozing:\n\n` +
       `Javobingiz to'g'ridan-to'g'ri xaridorga yuboriladi.`,
-      { parse_mode: 'HTML' }
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
+          resize_keyboard: true,
+          is_persistent: true
+        }
+      }
     );
   });
 
@@ -320,10 +327,23 @@ export function createBot(): Bot<MyContext> {
         ctx.session.step = 'reply_to_buyer';
         await ctx.reply(
           `✏️ <b>${session_data.replyToBuyer.buyerName}</b> ga javob yozing:`,
-          { parse_mode: 'HTML' }
+          {
+            parse_mode: 'HTML',
+            reply_markup: {
+              keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
+              resize_keyboard: true,
+              is_persistent: true
+            }
+          }
         );
       } else {
-        await ctx.reply('Hozircha xaridorlar yo\'q. Yangi xaridor kelganda xabar beramiz.');
+        await ctx.reply('Hozircha xaridorlar yo\'q. Yangi xaridor kelganda xabar beramiz.', {
+          reply_markup: {
+            keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
+            resize_keyboard: true,
+            is_persistent: true
+          }
+        });
       }
       return;
     }
@@ -331,12 +351,20 @@ export function createBot(): Bot<MyContext> {
       const seller = await sellerService.getByTelegramId(telegramId);
       if (seller) {
         await ctx.reply('Do\'koningizni ko\'ring:', {
-          reply_markup: new InlineKeyboard().row(
-            { text: '🏪 Do\'konim', web_app: { url: `${WEB_APP_URL}/seller/${seller.store_slug}?user=${telegramId}` } }
-          )
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🏪 Do\'konim', web_app: { url: `${WEB_APP_URL}/seller/${seller.store_slug}?user=${telegramId}` } }
+            ]]
+          }
         });
       } else {
-        await ctx.reply('Sizda do\'kon mavjud emas. /start buyrug\'i orqali do\'kon oching.');
+        await ctx.reply('Sizda do\'kon mavjud emas. /start buyrug\'i orqali do\'kon oching.', {
+          reply_markup: {
+            keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
+            resize_keyboard: true,
+            is_persistent: true
+          }
+        });
       }
       return;
     }
@@ -371,7 +399,13 @@ export function createBot(): Bot<MyContext> {
         });
       } catch (error) {
         console.error('Failed to send reply:', error);
-        await ctx.reply('❌ Xatolik yuz berdi. Xaridor botni bloklagan bo\'lishi mumkin.');
+        await ctx.reply('❌ Xatolik yuz berdi. Xaridor botni bloklagan bo\'lishi mumkin.', {
+          reply_markup: {
+            keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
+            resize_keyboard: true,
+            is_persistent: true
+          }
+        });
       }
       return;
     }
