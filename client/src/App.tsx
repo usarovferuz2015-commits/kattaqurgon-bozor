@@ -48,6 +48,7 @@ function App() {
           const telegramId = storeId || (urlUserId ? parseInt(urlUserId) : null);
 
           if (telegramId) {
+            setTelegramId(telegramId);
             const res = await authService.initById(telegramId);
             if (res.success && res.data?.token) {
               setUser(res.data.user);
@@ -55,7 +56,6 @@ function App() {
               setIsSeller(res.data.is_seller);
               setIsAdmin(res.data.is_admin);
               setToken(res.data.token);
-              setTelegramId(telegramId);
             }
           }
         }
