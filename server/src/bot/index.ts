@@ -48,7 +48,7 @@ export function createBot(): Bot<MyContext> {
           { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}?user=${telegramId}` } }
         )
         .row(
-          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}` } }
+          { text: '👨‍💼 Sotuvchi Paneli', web_app: { url: `${WEB_APP_URL}/seller?user=${telegramId}&role=seller` } }
         )
         .row(
           { text: '🏪 Do\'kon ochish', callback_data: 'seller_register' }

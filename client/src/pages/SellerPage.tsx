@@ -76,7 +76,7 @@ export default function SellerPage() {
             </div>
             {currentUserId && storeData && currentUserId === storeData.telegram_id && (
               <button
-                onClick={() => navigate('/seller')}
+                onClick={() => navigate(`/seller?user=${currentUserId}&role=seller`)}
                 className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium mb-3 hover:bg-primary-700 transition-colors"
               >
                 <FiSettings className="w-4 h-4" /> Sotuvchi paneli
