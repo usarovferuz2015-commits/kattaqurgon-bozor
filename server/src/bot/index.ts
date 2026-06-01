@@ -13,6 +13,7 @@ interface SessionData {
   step: string;
   sellerForm?: Record<string, string>;
   productForm?: Record<string, any>;
+  replyToBuyer?: { buyerTelegramId: number; buyerName: string; productName: string };
 }
 
 type MyContext = Context & SessionFlavor<SessionData>;
@@ -237,6 +238,24 @@ export function createBot(): Bot<MyContext> {
     }
   });
 
+  // === Reply to buyer handler ===
+  bot.callbackQuery(/^reply_(\d+)_(.+)$/, async (ctx) => {
+    const buyerTelegramId = parseInt(ctx.match[1]);
+    const productSlug = ctx.match[2];
+    const buyerName = ctx.callbackQuery.message?.text?.match(/👤 Xaridor: (.+)/)?.[1] || 'Xaridor';
+    const productName = ctx.callbackQuery.message?.text?.match(/📦 Mahsulot: <b>(.+?)<\/b>/)?.[1] || 'Mahsulot';
+    
+    ctx.session.replyToBuyer = { buyerTelegramId, buyerName, productName };
+    ctx.session.step = 'reply_to_buyer';
+    
+    await ctx.answerCallbackQuery({ text: '✏️ Javobingizni yozing' });
+    await ctx.reply(
+      `✏️ <b>${buyerName}</b> ga javob yozing:\n\n` +
+      `Javobingiz to'g'ridan-to'g'ri xaridorga yuboriladi.`,
+      { parse_mode: 'HTML' }
+    );
+  });
+
   bot.callbackQuery(/seller_(.+)/, async (ctx) => {
     const action = ctx.match[1];
     const telegramId = ctx.from!.id;
@@ -293,6 +312,27 @@ export function createBot(): Bot<MyContext> {
     const text = ctx.message.text;
     const telegramId = ctx.from!.id;
     const session_data = ctx.session;
+
+    if (session_data.step === 'reply_to_buyer' && session_data.replyToBuyer) {
+      const { buyerTelegramId, buyerName, productName } = session_data.replyToBuyer;
+      session_data.step = 'idle';
+      session_data.replyToBuyer = undefined;
+      try {
+        const bot = getBot();
+        await bot.api.sendMessage(buyerTelegramId,
+          `📩 Sotuvchidan javob:\n\n` +
+          `${text}\n\n` +
+          `📦 Mahsulot: ${productName}\n` +
+          `💬 Sotuvchiga javob yozish: tg://user?id=${telegramId}`,
+          { parse_mode: 'HTML' }
+        );
+        await ctx.reply('✅ Javobingiz xaridorga yuborildi!');
+      } catch (error) {
+        console.error('Failed to send reply:', error);
+        await ctx.reply('❌ Xatolik yuz berdi. Xaridor botni bloklagan bo\'lishi mumkin.');
+      }
+      return;
+    }
 
     if (session_data.step === 'seller_name') {
       session_data.sellerForm = { store_name: text };
@@ -424,10 +464,16 @@ export async function notifyContactSeller(
       `👋 Yangi xaridor!\n\n` +
       `📦 Mahsulot: <b>${productName}</b>\n` +
       `👤 Xaridor: ${buyerName}\n\n` +
-      `Xaridor bilan bog'lanmoqchi bo'lsangiz, quyidagi havola orqali unga yozishingiz mumkin:\n` +
-      `➡️ Xaridorga yozish: tg://user?id=${buyerTelegramId}\n\n` +
+      `Xaridorga javob yozish uchun pastdagi tugmani bosing:\n` +
       `🛍 Mahsulot: ${webAppUrl}/product/${productSlug}`,
-      { parse_mode: 'HTML' }
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '✏️ Javob yozish', callback_data: `reply_${buyerTelegramId}_${productSlug}` }
+          ]]
+        }
+      }
     );
   } catch (error) {
     console.error(`Failed to notify seller ${sellerTelegramId}:`, error);
