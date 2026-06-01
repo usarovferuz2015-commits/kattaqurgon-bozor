@@ -340,6 +340,14 @@ export function createBot(): Bot<MyContext> {
       }
       return;
     }
+    if (text === '🛍 Katalog') {
+      await ctx.reply('Katalogni ochish:', {
+        reply_markup: new InlineKeyboard().row(
+          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}` } }
+        )
+      });
+      return;
+    }
 
     if (session_data.step === 'reply_to_buyer' && session_data.replyToBuyer) {
       const { buyerTelegramId, buyerName, productName } = session_data.replyToBuyer;
@@ -356,7 +364,7 @@ export function createBot(): Bot<MyContext> {
         );
         await ctx.reply('✅ Javobingiz xaridorga yuborildi!', {
           reply_markup: {
-            keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🏪 Do\'konim' }]],
+            keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
             resize_keyboard: true,
             is_persistent: true
           }
@@ -511,7 +519,7 @@ export async function notifyContactSeller(
     // Send persistent keyboard that stays at bottom
     await bot.api.sendMessage(sellerTelegramId, 'Pastki tugma orqali javob yozishingiz mumkin:', {
       reply_markup: {
-        keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🏪 Do\'konim' }]],
+        keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
         resize_keyboard: true,
         is_persistent: true
       }
