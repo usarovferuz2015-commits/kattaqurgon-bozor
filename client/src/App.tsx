@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAppStore } from './store/appStore';
 import { authService } from './services/endpoints';
 import HomePage from './pages/HomePage';
@@ -20,6 +20,14 @@ function App() {
   const { setUser, setSeller, setIsSeller, setIsAdmin, setToken, setTelegramId } = useAppStore();
   const [authReady, setAuthReady] = useState(false);
   const location = useLocation();
+
+  const handleBack = useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  }, []);
 
   useEffect(() => {
     async function doAuth() {
@@ -75,23 +83,26 @@ function App() {
     try {
       const tg = (window as any)?.Telegram?.WebApp;
       if (tg?.BackButton) {
+        tg.BackButton.offClick(handleBack);
         if (location.pathname === '/') {
           tg.BackButton.hide();
         } else {
+          tg.BackButton.onClick(handleBack);
           tg.BackButton.show();
-          tg.BackButton.onClick(() => {
-            tg.BackButton.hide();
-            if (window.history.length > 1) {
-              window.history.back();
-            } else {
-              window.location.href = '/';
-            }
-          });
         }
       }
     } catch (e) {
       // Telegram WebView mavjud emas
     }
+    return () => {
+      try {
+        const tg = (window as any)?.Telegram?.WebApp;
+        if (tg?.BackButton) {
+          tg.BackButton.offClick(handleBack);
+          tg.BackButton.hide();
+        }
+      } catch (e) {}
+    };
   }, [location.pathname]);
 
   if (!authReady) {
