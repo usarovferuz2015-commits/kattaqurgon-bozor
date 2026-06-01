@@ -9,7 +9,7 @@ export default function SellerDashboard() {
   const telegramId = new URLSearchParams(window.location.search).get('user') || String(storeTelegramId || '');
   const role = new URLSearchParams(window.location.search).get('role');
 
-  const isSeller = telegramId && role === 'seller';
+  const isSeller = (telegramId && role === 'seller') || !!seller;
 
   if (!isSeller) {
     return (
