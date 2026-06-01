@@ -239,7 +239,7 @@ export function createBot(): Bot<MyContext> {
   });
 
   // === Reply to buyer handler ===
-  bot.callbackQuery(/^reply_(\d+)$/, async (ctx) => {
+  bot.callbackQuery(/^reply_(\d+)/, async (ctx) => {
     const buyerTelegramId = parseInt(ctx.match[1]);
     const buyerName = ctx.session.replyToBuyer?.buyerName || 
       ctx.callbackQuery.message?.text?.match(/👤 Xaridor: (.+)/)?.[1] || 'Xaridor';
@@ -477,7 +477,7 @@ export async function notifyContactSeller(
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [[
-            { text: '✏️ Javob yozish', callback_data: `reply_${buyerTelegramId}_${productSlug}` }
+            { text: '✏️ Javob yozish', callback_data: `reply_${buyerTelegramId}` }
           ]]
         }
       }
