@@ -18,6 +18,11 @@ export default function SellerPage() {
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
 
+  // DEBUG: smartfonda URL ni ko'rish uchun
+  useEffect(() => {
+    alert("SellerPage URL: " + window.location.href + "\nSlug: " + slug);
+  }, []);
+
   // 1. Fetch Store Profile
   const { data: storeData, isLoading: storeLoading } = useQuery({
     queryKey: ['seller', slug],
