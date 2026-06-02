@@ -61,7 +61,9 @@ router.get('/me', authMiddleware, async (req: Request, res: Response) => {
 router.get('/:identifier', async (req: Request, res: Response) => {
   try {
     const identifier = String(req.params.identifier);
+    console.log('[SellerAPI] Lookup identifier:', identifier);
     const isNumeric = /^\d+$/.test(identifier);
+    console.log('[SellerAPI] isNumeric:', isNumeric);
  
     let seller;
     if (isNumeric) {

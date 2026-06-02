@@ -22,8 +22,15 @@ export default function SellerPage() {
   const { data: storeData, isLoading: storeLoading } = useQuery({
     queryKey: ['seller', slug],
     queryFn: async () => {
-      const res = await sellerService.get(slug!);
-      return res.data;
+      console.log('[SellerPage] Fetching seller with slug:', slug);
+      try {
+        const res = await sellerService.get(slug!);
+        console.log('[SellerPage] API response:', res);
+        return res.data;
+      } catch (err: any) {
+        console.error('[SellerPage] API error:', err.response?.status, err.response?.data);
+        throw err;
+      }
     },
     enabled: !!slug,
   });
