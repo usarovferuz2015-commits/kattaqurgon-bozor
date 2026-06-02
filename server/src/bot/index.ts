@@ -21,6 +21,9 @@ type MyContext = Context & SessionFlavor<SessionData>;
 const WEB_APP_URL = 'https://kattaqurgon-bozor.vercel.app';
 const ADMIN_WEB_APP_URL = config.app.adminWebAppUrl;
 
+// Map to track last seller for each buyer (for reply)
+const buyerSellerMap = new Map<number, { sellerTelegramId: number; sellerName: string; productName: string }>();
+
 export function createBot(): Bot<MyContext> {
   const bot = new Bot<MyContext>(config.bot.token);
 
@@ -368,6 +371,25 @@ export function createBot(): Bot<MyContext> {
       }
       return;
     }
+    if (text === '✏️ Sotuvchiga yozish') {
+      const sellerInfo = buyerSellerMap.get(telegramId);
+      if (sellerInfo) {
+        ctx.session.replyToBuyer = {
+          buyerTelegramId: sellerInfo.sellerTelegramId,
+          buyerName: sellerInfo.sellerName,
+          productName: sellerInfo.productName
+        };
+        ctx.session.step = 'reply_to_buyer';
+        await ctx.reply(
+          `✏️ <b>${sellerInfo.sellerName}</b> ga javob yozing:\n\n` +
+          `📦 Mahsulot: ${sellerInfo.productName}`,
+          { parse_mode: 'HTML' }
+        );
+      } else {
+        await ctx.reply('Hozircha suhbat mavjud emas. Katalog orqali sotuvchiga yozing.');
+      }
+      return;
+    }
     if (text === '🏪 Do\'konlar') {
       await ctx.reply('Katalogni oching va do\'konlarni ko\'ring:', {
         reply_markup: new InlineKeyboard().row(
@@ -391,16 +413,21 @@ export function createBot(): Bot<MyContext> {
       session_data.replyToBuyer = undefined;
       try {
         const bot = getBot();
+        // Store seller info so buyer can reply back
+        buyerSellerMap.set(buyerTelegramId, {
+          sellerTelegramId: telegramId,
+          sellerName: ctx.from?.first_name || 'Sotuvchi',
+          productName
+        });
         await bot.api.sendMessage(buyerTelegramId,
           `📩 Sotuvchidan javob:\n\n` +
           `${text}\n\n` +
-          `📦 Mahsulot: ${productName}\n` +
-          `💬 Sotuvchiga javob yozish: tg://user?id=${telegramId}`,
+          `📦 Mahsulot: ${productName}`,
           { parse_mode: 'HTML' }
         );
-        await bot.api.sendMessage(buyerTelegramId, 'Pastki tugmalar orqali katalog va do\'konlarga o\'ting:', {
+        await bot.api.sendMessage(buyerTelegramId, 'Pastki tugma orqali sotuvchiga javob yozishingiz mumkin:', {
           reply_markup: {
-            keyboard: [[{ text: '🛍 Katalog' }, { text: '🏪 Do\'konlar' }]],
+            keyboard: [[{ text: '✏️ Sotuvchiga yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konlar' }]],
             resize_keyboard: true,
             is_persistent: true
           }
@@ -579,6 +606,12 @@ export async function notifyContactSeller(
 
   // Send confirmation to buyer
   try {
+    // Store seller info so buyer can reply back
+    buyerSellerMap.set(buyerTelegramId, {
+      sellerTelegramId: sellerTelegramId,
+      sellerName: buyerName, // buyerName is used as sender info
+      productName
+    });
     await bot.api.sendMessage(
       buyerTelegramId,
       `✅ Xabaringiz sotuvchiga yuborildi!\n\n` +
@@ -595,7 +628,7 @@ export async function notifyContactSeller(
     // Xaridorga ham persistent keyboard jo'natamiz
     await bot.api.sendMessage(buyerTelegramId, 'Pastki tugmalar orqali katalog va do\'konlarga o\'ting:', {
       reply_markup: {
-        keyboard: [[{ text: '🛍 Katalog' }, { text: '🏪 Do\'konlar' }]],
+        keyboard: [[{ text: '✏️ Sotuvchiga yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konlar' }]],
         resize_keyboard: true,
         is_persistent: true
       }
