@@ -239,6 +239,12 @@ export default function ProductPage() {
         {/* Seller */}
         <Link
           to={`/seller/${product.seller?.store_slug || product.seller?.id}`}
+          onClick={() => {
+            console.log('[ProductPage] Seller link clicked');
+            console.log('[ProductPage] seller object:', JSON.stringify(product.seller));
+            console.log('[ProductPage] store_slug:', product.seller?.store_slug);
+            console.log('[ProductPage] seller.id:', product.seller?.id);
+          }}
           className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
         >
           <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center text-xl">
