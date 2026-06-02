@@ -18,24 +18,12 @@ export default function SellerPage() {
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
 
-  // DEBUG: smartfonda URL ni ko'rish uchun
-  useEffect(() => {
-    alert("SellerPage URL: " + window.location.href + "\nSlug: " + slug);
-  }, []);
-
   // 1. Fetch Store Profile
   const { data: storeData, isLoading: storeLoading } = useQuery({
     queryKey: ['seller', slug],
     queryFn: async () => {
-      console.log('[SellerPage] Fetching seller with slug:', slug);
-      try {
-        const res = await sellerService.get(slug!);
-        console.log('[SellerPage] API response:', res);
-        return res.data;
-      } catch (err: any) {
-        console.error('[SellerPage] API error:', err.response?.status, err.response?.data);
-        throw err;
-      }
+      const res = await sellerService.get(slug!);
+      return res.data;
     },
     enabled: !!slug,
   });
