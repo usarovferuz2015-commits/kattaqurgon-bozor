@@ -368,6 +368,14 @@ export function createBot(): Bot<MyContext> {
       }
       return;
     }
+    if (text === '🏪 Do\'konlar') {
+      await ctx.reply('Katalogni oching va do\'konlarni ko\'ring:', {
+        reply_markup: new InlineKeyboard().row(
+          { text: '🛍 Katalog', web_app: { url: `${WEB_APP_URL}` } }
+        )
+      });
+      return;
+    }
     if (text === '🛍 Katalog') {
       await ctx.reply('Katalogni ochish:', {
         reply_markup: new InlineKeyboard().row(
@@ -390,6 +398,13 @@ export function createBot(): Bot<MyContext> {
           `💬 Sotuvchiga javob yozish: tg://user?id=${telegramId}`,
           { parse_mode: 'HTML' }
         );
+        await bot.api.sendMessage(buyerTelegramId, 'Pastki tugmalar orqali katalog va do\'konlarga o\'ting:', {
+          reply_markup: {
+            keyboard: [[{ text: '🛍 Katalog' }, { text: '🏪 Do\'konlar' }]],
+            resize_keyboard: true,
+            is_persistent: true
+          }
+        });
         await ctx.reply('✅ Javobingiz xaridorga yuborildi!', {
           reply_markup: {
             keyboard: [[{ text: '✏️ Javob yozish' }, { text: '🛍 Katalog' }, { text: '🏪 Do\'konim' }]],
@@ -577,6 +592,14 @@ export async function notifyContactSeller(
         }
       }
     );
+    // Xaridorga ham persistent keyboard jo'natamiz
+    await bot.api.sendMessage(buyerTelegramId, 'Pastki tugmalar orqali katalog va do\'konlarga o\'ting:', {
+      reply_markup: {
+        keyboard: [[{ text: '🛍 Katalog' }, { text: '🏪 Do\'konlar' }]],
+        resize_keyboard: true,
+        is_persistent: true
+      }
+    });
   } catch (error) {
     console.error(`Failed to confirm buyer ${buyerTelegramId}:`, error);
   }
