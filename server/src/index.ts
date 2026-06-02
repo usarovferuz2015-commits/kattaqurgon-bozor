@@ -60,7 +60,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', authMiddleware, cartRoutes);
-app.use('/api/sellers', authMiddleware, sellerRoutes);
+app.use('/api/sellers', sellerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', authMiddleware, uploadRoutes);
 app.use('/api/reviews', authMiddleware, reviewRoutes);

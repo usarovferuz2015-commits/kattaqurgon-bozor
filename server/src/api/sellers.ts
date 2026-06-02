@@ -12,7 +12,7 @@ import { authMiddleware } from '../middleware/auth';
 const router = Router();
 
 // POST /api/sellers/register
-router.post('/register', validate(SellerSchema.register), async (req: Request, res: Response) => {
+router.post('/register', authMiddleware, validate(SellerSchema.register), async (req: Request, res: Response) => {
   try {
     const telegram_id = (req as any).user?.telegramId;
     const { ...sellerData } = req.body;
@@ -92,7 +92,7 @@ router.get('/:identifier', async (req: Request, res: Response) => {
 });
 
 // PUT /api/sellers/:telegramId
-router.put('/:telegramId', validate(SellerSchema.update), async (req: Request, res: Response) => {
+router.put('/:telegramId', authMiddleware, validate(SellerSchema.update), async (req: Request, res: Response) => {
   try {
     const targetTelegramId = parseInt(String((req.params as any).telegramId));
     const currentUserId = (req as any).user?.telegramId;
@@ -119,7 +119,7 @@ router.get('/top/list', async (_req: Request, res: Response) => {
 });
 
 // DELETE /api/sellers/:id
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, async (req: Request, res: Response) => {
   try {
     const sellerId = String((req.params as any).id);
     const seller = await sellerService.getById(sellerId);
