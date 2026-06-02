@@ -326,7 +326,16 @@ export class ProductService {
   }
  
   async incrementViews(id: string): Promise<void> {
-    await this.adminDb.rpc('increment_product_views', { product_id: id });
+    const { data } = await this.adminDb
+      .from('products')
+      .select('views_count')
+      .eq('id', id)
+      .single();
+    const current = data?.views_count ?? 0;
+    await this.adminDb
+      .from('products')
+      .update({ views_count: current + 1 })
+      .eq('id', id);
   }
  
   async getCount(): Promise<number> {
