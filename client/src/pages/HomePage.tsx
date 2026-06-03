@@ -163,12 +163,12 @@ export default function HomePage() {
         {/* Most Viewed */}
         {homepageData?.most_viewed?.length > 0 && (
           <section>
-            <SectionHeader title="👁 Eng ko'p ko'rilgan" />
+            <SectionHeader title="🔥 Eng ko'p ko'rilgan" />
             {isLoading ? (
-              <ProductGridSkeleton count={4} />
+              <ProductGridSkeleton count={6} />
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {homepageData.most_viewed.slice(0, 4).map((product: any) => (
+                {homepageData.most_viewed.slice(0, 6).map((product: any) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
