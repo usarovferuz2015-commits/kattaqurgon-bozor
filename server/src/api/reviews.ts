@@ -5,6 +5,7 @@ import { Router, Request, Response } from 'express';
 import { reviewService } from '../services/review.service';
 import { validate } from '../middleware/validate';
 import { ReviewSchema } from '../utils/validation';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get('/:productId', async (req: Request, res: Response) => {
 });
 
 // POST /api/reviews - Create or update a review
-router.post('/', validate(ReviewSchema.create), async (req: Request, res: Response) => {
+router.post('/', authMiddleware, validate(ReviewSchema.create), async (req: Request, res: Response) => {
   try {
     const telegram_id = req.user?.telegramId;
     const { product_id, rating, comment } = req.body;
@@ -53,7 +54,7 @@ router.post('/', validate(ReviewSchema.create), async (req: Request, res: Respon
 });
 
 // GET /api/reviews/:productId/my - Get current user's review
-router.get('/:productId/my', async (req: Request, res: Response) => {
+router.get('/:productId/my', authMiddleware, async (req: Request, res: Response) => {
   try {
     const productId = (req.params as any).productId;
     const telegramId = req.user?.telegramId;
@@ -70,7 +71,7 @@ router.get('/:productId/my', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/reviews/:reviewId
-router.delete('/:reviewId', async (req: Request, res: Response) => {
+router.delete('/:reviewId', authMiddleware, async (req: Request, res: Response) => {
   try {
     const reviewId = (req.params as any).reviewId;
     const telegramId = req.user?.telegramId;

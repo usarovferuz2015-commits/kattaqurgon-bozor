@@ -63,7 +63,7 @@ app.use('/api/cart', authMiddleware, cartRoutes);
 app.use('/api/sellers', sellerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', authMiddleware, uploadRoutes);
-app.use('/api/reviews', authMiddleware, reviewRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // === Health check ===
 app.get('/health', (_req, res) => {
