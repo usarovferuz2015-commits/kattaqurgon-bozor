@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { FiSend, FiTrash2, FiUser } from 'react-icons/fi';
-import { reviewService } from '../../services/endpoints';
+import { reviewService, authService } from '../../services/endpoints';
 import { useAppStore } from '../../store/appStore';
 import toast from 'react-hot-toast';
 import StarRating from './StarRating';
@@ -48,14 +48,25 @@ export default function Reviews({ productId, productSlug, avgRating = 0, ratingC
   });
 
   const createMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const payload = {
         telegram_id: telegramId,
         product_id: productId,
         rating,
         comment: comment.trim() || undefined,
       };
-      console.log('[Reviews] Submitting:', JSON.stringify(payload));
+      // Token yo'q bo'lsa, qayta auth
+      let currentToken = useAppStore.getState().token;
+      if (!currentToken && telegramId) {
+        try {
+          const res = await authService.initById(telegramId);
+          if (res.success && res.data?.token) {
+            useAppStore.getState().setToken(res.data.token);
+          }
+        } catch (e) {
+          console.error('Re-auth failed:', e);
+        }
+      }
       return reviewService.create(payload as any);
     },
     onSuccess: () => {
