@@ -14,7 +14,10 @@ interface ReviewsProps {
 }
 
 export default function Reviews({ productId, productSlug, avgRating = 0, ratingCount = 0 }: ReviewsProps) {
-  const { telegramId } = useAppStore();
+  const storeTelegramId = useAppStore((s) => s.telegramId);
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlUserId = urlParams.get('user');
+  const telegramId = storeTelegramId || (urlUserId ? parseInt(urlUserId) : null);
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');

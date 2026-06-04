@@ -21,15 +21,14 @@ router.get('/:productId', async (req: Request, res: Response) => {
 });
 
 // POST /api/reviews - Create or update a review
-router.post('/', authMiddleware, validate(ReviewSchema.create), async (req: Request, res: Response) => {
+router.post('/', validate(ReviewSchema.create), async (req: Request, res: Response) => {
   try {
-    const telegram_id = req.user?.telegramId;
-    const { product_id, rating, comment } = req.body;
+    const { product_id, rating, comment, telegram_id } = req.body;
 
     if (!telegram_id || !product_id || !rating) {
       return res.status(400).json({
         success: false,
-        error: 'product_id va rating majburiy',
+        error: 'product_id, telegram_id va rating majburiy',
       });
     }
 
