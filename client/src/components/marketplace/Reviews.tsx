@@ -18,7 +18,18 @@ export default function Reviews({ productId, productSlug, avgRating = 0, ratingC
   const userTelegramId = useAppStore((s) => s.user?.telegram_id);
   const urlParams = new URLSearchParams(window.location.search);
   const urlUserId = urlParams.get('user');
-  const telegramId = storeTelegramId || userTelegramId || (urlUserId ? parseInt(urlUserId) : null);
+  const storedId = (() => {
+    try {
+      const raw = localStorage.getItem('kattaqurgon-cart');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const id = parsed?.state?.telegramId || parsed?.telegramId;
+        return id || null;
+      }
+    } catch (e) {}
+    return null;
+  })();
+  const telegramId = storeTelegramId || userTelegramId || (urlUserId ? parseInt(urlUserId) : null) || storedId;
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
