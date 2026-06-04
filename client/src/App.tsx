@@ -51,7 +51,11 @@ function App() {
             setToken(res.data.token);
             setTelegramId(res.data.user?.telegram_id || null);
           }
-        } else {
+        }
+        
+        // har doim fallback: telegramId topib olib token olishga harakat qilamiz
+        if (!useAppStore.getState().token) {
+          const tg = (window as any)?.Telegram?.WebApp;
           const params = new URLSearchParams(window.location.search);
           const urlUserId = params.get('user');
           const storeId = useAppStore.getState().telegramId;
