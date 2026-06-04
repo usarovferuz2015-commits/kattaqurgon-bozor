@@ -13,6 +13,7 @@ import SellerPage from './pages/SellerPage';
 import SellerDashboard from './pages/SellerDashboard';
 import SellerProducts from './pages/SellerProducts';
 import SellerAddProduct from './pages/SellerAddProduct';
+import MyTickets from './pages/MyTickets';
 
 export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -131,6 +132,7 @@ function App() {
         <Route path="/seller/:slug" element={<SellerPage />} />
         <Route path="/seller/products" element={<SellerProducts />} />
         <Route path="/seller/add-product" element={<SellerAddProduct />} />
+        <Route path="/my-tickets" element={<MyTickets />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

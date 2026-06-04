@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FiSend, FiCamera, FiX } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiSend, FiCamera, FiX, FiList } from 'react-icons/fi';
 import { useAppStore } from '../../store/appStore';
 import { authService } from '../../services/endpoints';
 import api from '../../services/api';
@@ -10,6 +11,7 @@ interface SupportModalProps {
 }
 
 export default function SupportModal({ onClose }: SupportModalProps) {
+  const navigate = useNavigate();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [screenshot, setScreenshot] = useState('');
@@ -100,6 +102,9 @@ export default function SupportModal({ onClose }: SupportModalProps) {
             <span className="text-5xl">✅</span>
             <p className="text-dark-700 mt-3 font-medium">Murojaatingiz qabul qilindi</p>
             <p className="text-sm text-dark-400 mt-1">Tez orada ko'rib chiqamiz</p>
+            <button onClick={() => { onClose(); navigate('/my-tickets'); }} className="btn-primary mt-4 flex items-center gap-2 mx-auto">
+              <FiList className="w-4 h-4" /> Mening murojaatlarim
+            </button>
           </div>
         ) : (
           <div className="p-5 space-y-4 overflow-y-auto">
@@ -135,6 +140,9 @@ export default function SupportModal({ onClose }: SupportModalProps) {
                 <FiSend className="w-4 h-4" />
               )}
               {submitting ? 'Yuborilmoqda...' : 'Yuborish'}
+            </button>
+            <button onClick={() => { onClose(); navigate('/my-tickets'); }} className="w-full text-center text-sm text-dark-400 hover:text-primary-600 mt-2 flex items-center justify-center gap-1">
+              <FiList className="w-3.5 h-3.5" /> Mening murojaatlarim
             </button>
           </div>
         )}

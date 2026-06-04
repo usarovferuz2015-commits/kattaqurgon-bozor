@@ -71,4 +71,16 @@ export const supportService = {
     if (error) throw error;
     return data;
   },
+
+  async getByTelegramId(telegramId: number) {
+    const db = getSupabaseClient();
+    const { data, error } = await db
+      .from('support_tickets')
+      .select('*')
+      .eq('telegram_id', telegramId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return data || [];
+  },
 };
