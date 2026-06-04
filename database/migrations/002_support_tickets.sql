@@ -1,7 +1,10 @@
 -- ============================================
 -- Support Tickets Table
 -- ============================================
-CREATE TYPE IF NOT EXISTS ticket_status AS ENUM ('open', 'in_progress', 'resolved', 'closed');
+DO $$ BEGIN
+  CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'resolved', 'closed');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS support_tickets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
