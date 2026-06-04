@@ -94,20 +94,7 @@ export default function Reviews({ productId, productSlug, avgRating = 0, ratingC
         <div>
           {!showForm ? (
             <button
-              onClick={() => {
-                if (!telegramId) {
-                  const tg = (window as any)?.Telegram?.WebApp;
-                  const botUrl = 'https://t.me/kattaqurgon_bozori_bot?start=app';
-                  if (tg?.openTelegramLink) {
-                    tg.openTelegramLink(botUrl);
-                  } else {
-                    window.open(botUrl, '_blank');
-                  }
-                  toast.error('Iltimos, bot orqali kiring');
-                  return;
-                }
-                setShowForm(true);
-              }}
+              onClick={() => setShowForm(true)}
               className="w-full py-3 border-2 border-dashed border-primary-300 rounded-2xl text-primary-600 font-medium text-sm hover:bg-primary-50 transition-colors"
             >
               Izoh qoldirish ✍️
