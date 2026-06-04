@@ -24,7 +24,6 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 
     const ticket = await supportService.create({
       telegram_id,
-      user_id: req.user?.id,
       subject,
       message,
       screenshot_url,
