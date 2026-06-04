@@ -54,7 +54,8 @@ function App() {
           const params = new URLSearchParams(window.location.search);
           const urlUserId = params.get('user');
           const storeId = useAppStore.getState().telegramId;
-          const telegramId = storeId || (urlUserId ? parseInt(urlUserId) : null);
+          const tgUserId = tg?.initDataUnsafe?.user?.id;
+          const telegramId = storeId || tgUserId || (urlUserId ? parseInt(urlUserId) : null);
 
           if (telegramId) {
             setTelegramId(telegramId);
