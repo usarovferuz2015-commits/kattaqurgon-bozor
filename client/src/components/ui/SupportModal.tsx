@@ -49,14 +49,34 @@ export default function SupportModal({ onClose }: SupportModalProps) {
     // Token yo'q bo'lsa, olishga harakat qil
     let token = useAppStore.getState().token;
     if (!token) {
-      const id = useAppStore.getState().telegramId;
-      if (id) {
-        try {
-          const res = await authService.initById(id);
+      try {
+        const tg = (window as any)?.Telegram?.WebApp;
+        
+        // Avval initData orqali urinib ko'ramiz
+        if (tg?.initData) {
+          const res = await authService.init(tg.initData);
           if (res.success && res.data?.token) {
             useAppStore.getState().setToken(res.data.token);
+            useAppStore.getState().setUser(res.data.user);
+            token = res.data.token;
           }
-        } catch (e) {}
+        }
+        
+        // Agar ishlamasa, initById orqali
+        if (!token) {
+          const id = useAppStore.getState().telegramId 
+            || tg?.initDataUnsafe?.user?.id
+            || new URLSearchParams(window.location.search).get('user') as any;
+          if (id) {
+            const res = await authService.initById(Number(id));
+            if (res.success && res.data?.token) {
+              useAppStore.getState().setToken(res.data.token);
+              token = res.data.token;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Re-auth failed:', e);
       }
     }
 
