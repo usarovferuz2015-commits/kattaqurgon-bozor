@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   FiGrid, FiUsers, FiShoppingBag, FiImage, FiBarChart2, FiDollarSign,
-  FiMenu, FiX, FiHome, FiChevronDown
+  FiMenu, FiX, FiHome, FiChevronDown, FiMessageSquare
 } from 'react-icons/fi';
 import { useState } from 'react';
 
@@ -19,6 +19,7 @@ const links = [
   { to: '/banners', icon: FiImage, label: 'Bannerlar', color: 'from-rose-500 to-rose-600' },
   { to: '/ads', icon: FiDollarSign, label: 'Reklamalar', color: 'from-purple-500 to-purple-600' },
   { to: '/analytics', icon: FiBarChart2, label: 'Analitika', color: 'from-indigo-500 to-indigo-600' },
+  { to: '/support', icon: FiMessageSquare, label: 'Murojaatlar', color: 'from-teal-500 to-teal-600' },
 ];
 
 export default function Sidebar({ open, onToggle }: SidebarProps) {

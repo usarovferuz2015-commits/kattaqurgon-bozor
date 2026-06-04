@@ -9,6 +9,7 @@ import PremiumAds from './pages/PremiumAds';
 import Users from './pages/Users';
 import Products from './pages/Products';
 import Analytics from './pages/Analytics';
+import SupportTickets from './pages/SupportTickets';
 
 export default function App() {
   const [adminId, setAdminId] = useState<number | null>(null);
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/users" element={<Users adminId={adminId} />} />
         <Route path="/products" element={<Products adminId={adminId} />} />
         <Route path="/analytics" element={<Analytics adminId={adminId} />} />
+        <Route path="/support" element={<SupportTickets />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

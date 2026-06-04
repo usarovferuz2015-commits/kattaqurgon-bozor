@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiUsers, FiShoppingBag, FiImage, FiBarChart2, FiDollarSign,
-  FiHome, FiUserCheck, FiArrowRight
+  FiHome, FiUserCheck, FiArrowRight, FiMessageSquare
 } from 'react-icons/fi';
 
 interface HomePageProps {
@@ -40,6 +40,10 @@ const menuItems = [
   {
     to: '/analytics', icon: FiBarChart2, label: 'Analitika', desc: 'Batafsil statistika',
     gradient: 'from-indigo-500 to-violet-600', count: null,
+  },
+  {
+    to: '/support', icon: FiMessageSquare, label: 'Murojaatlar', desc: 'Foydalanuvchi xabarlari',
+    gradient: 'from-teal-500 to-emerald-600', count: null,
   },
 ];
 

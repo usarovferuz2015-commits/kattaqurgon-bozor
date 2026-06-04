@@ -254,4 +254,32 @@ router.delete('/sellers/by-name/:storeName', async (req: Request, res: Response)
   }
 });
 
+// === Support Tickets ===
+import { supportService } from '../services/support.service';
+
+router.get('/support-tickets', async (req: Request, res: Response) => {
+  try {
+    const status = req.query.status as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const result = await supportService.getAll({ status, page });
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.put('/support-tickets/:id', async (req: Request, res: Response) => {
+  try {
+    const { status, admin_response } = req.body;
+    const ticket = await supportService.updateStatus(
+      String((req.params as any).id),
+      status,
+      admin_response
+    );
+    res.json({ success: true, data: ticket });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
