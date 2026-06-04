@@ -48,12 +48,16 @@ export default function Reviews({ productId, productSlug, avgRating = 0, ratingC
   });
 
   const createMutation = useMutation({
-    mutationFn: () => reviewService.create({
-      telegram_id: telegramId!,
-      product_id: productId,
-      rating,
-      comment: comment.trim() || undefined,
-    }),
+    mutationFn: () => {
+      const payload = {
+        telegram_id: telegramId,
+        product_id: productId,
+        rating,
+        comment: comment.trim() || undefined,
+      };
+      console.log('[Reviews] Submitting:', JSON.stringify(payload));
+      return reviewService.create(payload as any);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
       queryClient.invalidateQueries({ queryKey: ['my-review', productId] });
