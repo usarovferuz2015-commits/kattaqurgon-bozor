@@ -13,15 +13,39 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 export default function MyTickets() {
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['my-tickets'],
     queryFn: async () => {
-      const res = await api.get('/support/my');
-      return res.data.data || [];
+      try {
+        const res = await api.get('/support/my');
+        return res?.data?.data || [];
+      } catch {
+        return [];
+      }
     },
   });
 
   const tickets = data || [];
+
+  if (isError || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-8">
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+          <div className="flex items-center gap-3 h-12 px-4">
+            <button onClick={() => navigate(-1)} className="p-1 -ml-1">
+              <FiArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="font-bold text-dark-900">Mening murojaatlarim</h1>
+          </div>
+        </div>
+        <div className="container-app py-4">
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => <div key={i} className="skeleton h-24 rounded-2xl" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
