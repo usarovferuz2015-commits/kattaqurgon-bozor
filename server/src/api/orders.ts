@@ -64,17 +64,17 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 
     // Notify buyer via Telegram
     try {
-      const totalOrders = createdOrders.length;
-      const totalAmount = createdOrders.reduce((s: number, o: any) => s + Number(o.total_amount), 0);
-      await bot.api.sendMessage(
-        buyerTelegramId,
-        `✅ <b>Buyurtmangiz qabul qilindi!</b>\n\n` +
-        `📦 Buyurtmalar soni: ${totalOrders} ta\n` +
-        `💰 Jami summa: ${totalAmount.toLocaleString()} so'm\n\n` +
-        `📞 Telefon raqamingiz: ${phone}\n` +
-        `⏳ Sotuvchi tez orada siz bilan bog'lanadi.`,
-        { parse_mode: 'HTML' }
-      );
+      let buyerMsg = `✅ <b>Buyurtmangiz qabul qilindi!</b>\n\n`;
+      for (const order of createdOrders) {
+        const group = itemsBySeller.find((g: any) => g.sellerId === order.seller_id);
+        const itemsList = group?.items?.map((i: any) => `• ${i.product_name} x${i.quantity}`).join('\n') || '';
+        buyerMsg += `🆔 Buyurtma №${order.id.slice(0, 8)}\n`;
+        buyerMsg += `📌 Status: Pending\n`;
+        buyerMsg += itemsList ? `📦 Mahsulotlar:\n${itemsList}\n` : '';
+        buyerMsg += `💰 Jami: ${Number(order.total_amount).toLocaleString()} so'm\n\n`;
+      }
+      buyerMsg += `📞 Telefon: ${phone}\n⏳ Sotuvchi tez orada bog'lanadi.`;
+      await bot.api.sendMessage(buyerTelegramId, buyerMsg, { parse_mode: 'HTML' });
     } catch (e) {
       console.error('Failed to notify buyer:', e);
     }
