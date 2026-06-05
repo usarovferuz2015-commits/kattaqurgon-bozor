@@ -89,12 +89,14 @@ export default function SupportModal({ onClose }: SupportModalProps) {
         page_url: window.location.href,
         device_info: navigator.userAgent,
       });
-      if (res.data.success) {
-        setTicketId(res.data.data.id);
+      if (res?.data?.success && res.data.data) {
+        setTicketId(String(res.data.data.id || ''));
         toast.success('Murojaatingiz qabul qilindi!');
+      } else {
+        toast.error(res?.data?.error || 'Xatolik yuz berdi');
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Xatolik yuz berdi');
+      toast.error(err?.response?.data?.error || err?.message || 'Xatolik yuz berdi');
     } finally {
       setSubmitting(false);
     }
@@ -110,7 +112,7 @@ export default function SupportModal({ onClose }: SupportModalProps) {
             <h2 className="font-bold text-dark-900 text-lg">
               {ticketId ? '✅ Murojaat qabul qilindi' : '📝 Murojaat yuborish'}
             </h2>
-            {ticketId && <p className="text-xs text-dark-400 mt-0.5">ID: {ticketId.slice(0, 8)}</p>}
+            {ticketId && <p className="text-xs text-dark-400 mt-0.5">ID: {String(ticketId).slice(0, 8)}</p>}
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl">
             <FiX className="w-5 h-5" />
