@@ -2,7 +2,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { productService } from '../services/endpoints';
-import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiMessageCircle } from 'react-icons/fi';
+import api from '../services/api';
+import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiMessageCircle, FiSend } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { goBack } from '../utils/navigation';
 
@@ -10,6 +11,9 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { cart, cartCount, cartTotal, updateCartQuantity, removeFromCart, clearCart, telegramId } = useAppStore();
   const [contacting, setContacting] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [ordering, setOrdering] = useState(false);
 
   const formatPrice = (price: number) => new Intl.NumberFormat('uz-UZ').format(price) + ' so\'m';
 
@@ -164,20 +168,72 @@ export default function CartPage() {
       {/* Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 safe-area-bottom">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-dark-500">Jami:</span>
-            <span className="text-xl font-bold text-primary-600">{formatPrice(cartTotal)}</span>
-          </div>
-          <button 
-            onClick={handleContactSellers}
-            disabled={contacting}
-            className="btn-primary w-full flex items-center justify-center gap-2"
-          >
-            {contacting ? 'Yuborilmoqda...' : <><FiMessageCircle className="w-5 h-5" /> Sotuvchiga yozish</>}
-          </button>
-          <p className="text-xs text-dark-400 text-center mt-2">
-            To'lov sotuvchi bilan kelishilgan holda amalga oshiriladi
-          </p>
+          {showCheckout ? (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-dark-700">Buyurtma berish uchun telefon raqamingizni kiriting:</p>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+998901234567"
+                className="input-field text-sm"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <button onClick={() => setShowCheckout(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-dark-500">
+                  Bekor qilish
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!phone.trim()) { toast.error('Telefon raqam kiriting'); return; }
+                    setOrdering(true);
+                    try {
+                      // Group by seller
+                      const itemsBySeller = cart.reduce((acc: any[], item) => {
+                        let group = acc.find(g => g.sellerId === item.seller_id);
+                        if (!group) {
+                          group = { sellerId: item.seller_id, items: [] };
+                          acc.push(group);
+                        }
+                        group.items.push({ product_id: item.product_id, product_name: item.name, quantity: item.quantity, price: item.price });
+                        return acc;
+                      }, []);
+
+                      const res = await api.post('/orders', { phone: phone.trim(), itemsBySeller });
+                      if (res?.data?.success) {
+                        clearCart();
+                        setShowCheckout(false);
+                        setPhone('');
+                        toast.success('Buyurtmangiz qabul qilindi!');
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.response?.data?.error || 'Xatolik yuz berdi');
+                    } finally {
+                      setOrdering(false);
+                    }
+                  }}
+                  disabled={ordering}
+                  className="flex-1 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {ordering ? <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <FiSend className="w-4 h-4" />}
+                  {ordering ? 'Yuborilmoqda...' : 'Buyurtma berish'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-dark-500">Jami:</span>
+                <span className="text-xl font-bold text-primary-600">{formatPrice(cartTotal)}</span>
+              </div>
+              <button onClick={() => setShowCheckout(true)} className="btn-primary w-full flex items-center justify-center gap-2 mb-2">
+                <FiSend className="w-5 h-5" /> Buyurtma berish
+              </button>
+              <button onClick={handleContactSellers} disabled={contacting} className="btn-secondary w-full flex items-center justify-center gap-2">
+                <FiMessageCircle className="w-5 h-5" /> Sotuvchiga yozish
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

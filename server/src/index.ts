@@ -21,6 +21,7 @@ import adminRoutes from './api/admin';
 import uploadRoutes from './api/upload';
 import reviewRoutes from './api/reviews';
 import supportRoutes from './api/support';
+import orderRoutes from './api/orders';
 
 const app = express();
 
@@ -66,6 +67,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/upload', authMiddleware, uploadRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/orders', orderRoutes);
 
 // === Health check ===
 app.get('/health', (_req, res) => {
