@@ -48,32 +48,12 @@ export default function Reviews({ productId, productSlug, avgRating = 0, ratingC
   });
 
   const createMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        telegram_id: telegramId,
-        product_id: productId,
-        rating,
-        comment: comment.trim() || undefined,
-      };
-      // Token eskirgan yoki yo'q bo'lsa yangilab olish
-      await (async () => {
-        try {
-          const tg = (window as any)?.Telegram?.WebApp;
-          if (tg?.initData) {
-            const r = await authService.init(tg.initData);
-            if (r.success) useAppStore.getState().setToken(r.data.token);
-          }
-        } catch (e) {}
-        if (!useAppStore.getState().token) {
-          const id = useAppStore.getState().telegramId;
-          if (id) {
-            const r = await authService.initById(id);
-            if (r.success) useAppStore.getState().setToken(r.data.token);
-          }
-        }
-      })();
-      return reviewService.create(payload as any);
-    },
+    mutationFn: () => reviewService.create({
+      telegram_id: telegramId,
+      product_id: productId,
+      rating,
+      comment: comment.trim() || undefined,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
       queryClient.invalidateQueries({ queryKey: ['my-review', productId] });

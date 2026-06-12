@@ -11,16 +11,14 @@ const api = axios.create({
   },
 });
 
+let isRefreshing = false;
+
 api.interceptors.request.use(
   (config) => {
     const state = useAppStore.getState();
     const token = state.token;
-    console.log(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, token ? `TOKEN=${token.slice(0,12)}...` : 'NO TOKEN');
-    console.log(`[API] Full headers:`, JSON.stringify(config.headers));
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      console.warn(`[API] WARNING: No token for ${config.url}`);
     }
     return config;
   },
@@ -29,7 +27,52 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshing) {
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const tg = (window as any)?.Telegram?.WebApp;
+
+        // Try initData auth first
+        if (tg?.initData) {
+          const { authService } = await import('./endpoints');
+          const res = await authService.init(tg.initData);
+          if (res.success && res.data?.token) {
+            useAppStore.getState().setToken(res.data.token);
+            originalRequest.headers.Authorization = `Bearer ${res.data.token}`;
+            isRefreshing = false;
+            return api(originalRequest);
+          }
+        }
+
+        // Fallback: try initById  
+        const storeState = useAppStore.getState();
+        const id = storeState.telegramId 
+          || storeState.user?.telegram_id 
+          || tg?.initDataUnsafe?.user?.id 
+          || new URLSearchParams(window.location.search).get('user');
+
+        if (id) {
+          const { authService } = await import('./endpoints');
+          const res = await authService.initById(Number(id));
+          if (res.success && res.data?.token) {
+            useAppStore.getState().setToken(res.data.token);
+            originalRequest.headers.Authorization = `Bearer ${res.data.token}`;
+            isRefreshing = false;
+            return api(originalRequest);
+          }
+        }
+      } catch (e) {
+        console.error('Token refresh failed:', e);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     const message = error.response?.data?.error || 'Xatolik yuz berdi';
     console.error('API Error:', error.response?.status, message);
     return Promise.reject(error);
