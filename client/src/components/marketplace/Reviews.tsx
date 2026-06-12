@@ -55,18 +55,23 @@ export default function Reviews({ productId, productSlug, avgRating = 0, ratingC
         rating,
         comment: comment.trim() || undefined,
       };
-      // Token yo'q bo'lsa, qayta auth
-      let currentToken = useAppStore.getState().token;
-      if (!currentToken && telegramId) {
+      // Token eskirgan yoki yo'q bo'lsa yangilab olish
+      await (async () => {
         try {
-          const res = await authService.initById(telegramId);
-          if (res.success && res.data?.token) {
-            useAppStore.getState().setToken(res.data.token);
+          const tg = (window as any)?.Telegram?.WebApp;
+          if (tg?.initData) {
+            const r = await authService.init(tg.initData);
+            if (r.success) useAppStore.getState().setToken(r.data.token);
           }
-        } catch (e) {
-          console.error('Re-auth failed:', e);
+        } catch (e) {}
+        if (!useAppStore.getState().token) {
+          const id = useAppStore.getState().telegramId;
+          if (id) {
+            const r = await authService.initById(id);
+            if (r.success) useAppStore.getState().setToken(r.data.token);
+          }
         }
-      }
+      })();
       return reviewService.create(payload as any);
     },
     onSuccess: () => {

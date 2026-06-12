@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAppStore } from '../store/appStore';
-import { productService } from '../services/endpoints';
+import { productService, authService } from '../services/endpoints';
 import api from '../services/api';
 import { FiArrowLeft, FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiMessageCircle, FiSend } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -198,6 +198,24 @@ export default function CartPage() {
                         group.items.push({ product_id: item.product_id, product_name: item.name, quantity: item.quantity, price: item.price });
                         return acc;
                       }, []);
+
+                      // Token eskirgan bo'lsa yangilab olish
+                      await (async () => {
+                        try {
+                          const tg = (window as any)?.Telegram?.WebApp;
+                          if (tg?.initData) {
+                            const r = await authService.init(tg.initData);
+                            if (r.success) useAppStore.getState().setToken(r.data.token);
+                          }
+                        } catch (e) {}
+                        if (!useAppStore.getState().token) {
+                          const id = useAppStore.getState().telegramId;
+                          if (id) {
+                            const r = await authService.initById(id);
+                            if (r.success) useAppStore.getState().setToken(r.data.token);
+                          }
+                        }
+                      })();
 
                       const res = await api.post('/orders', { phone: phone.trim(), itemsBySeller });
                       if (res?.data?.success) {
